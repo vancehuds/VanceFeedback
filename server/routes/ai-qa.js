@@ -121,17 +121,45 @@ router.post('/ask', authenticateToken, requireAIQAEnabled, checkAIBan, async (re
 
         // Check if AI is available
         if (!isAIAvailable()) {
+            console.warn('AI Q&A request failed: AI service not initialized');
             return res.status(503).json({ error: 'AI 服务暂不可用' });
         }
 
         // Search for related articles in knowledge base
-        const searchTerm = `%${question.trim()}%`;
-        const [articles] = await db.query(
-            `SELECT title, content FROM kb_articles 
-             WHERE is_published = 1 AND (title LIKE ? OR content LIKE ?)
-             LIMIT 5`,
-            [searchTerm, searchTerm]
-        );
+        // 1. Try exact match first
+        // const db = getDB(); // Already declared
+        let articles = [];
+        const cleanQuestion = question.trim();
+
+        // Strategy 1: Search by keywords (split by space)
+        // If query has no spaces (e.g. continuous Chinese), we might just use the whole string or simple char blocks?
+        // For now, let's try a simple approach: if user inputs a sentence, we try to match segments?
+        // Actually, basic SQL LIKE is poor for natural language.
+        // Let's at least support space-separated keywords.
+        const keywords = cleanQuestion.split(/\s+/).filter(k => k.length > 0);
+
+        if (keywords.length > 0) {
+            // Build dynamic query
+            const conditions = [];
+            const params = [];
+
+            keywords.forEach(kw => {
+                conditions.push('(title LIKE ? OR content LIKE ?)');
+                params.push(`%${kw}%`, `%${kw}%`);
+            });
+
+            // Allow matching ANY keyword, but we could prioritize?
+            // SQLite/MySQL standard LIKE doesn't score relevance easily.
+            // Let's just grab top 5 matching ANY
+            const sql = `SELECT title, content FROM kb_articles 
+                         WHERE is_published = 1 AND (${conditions.join(' OR ')})
+                         LIMIT 5`;
+
+            const [rows] = await db.query(sql, params);
+            articles = rows;
+        }
+
+        console.log(`[AI-QA] Question: "${cleanQuestion}", Keywords: [${keywords.join(', ')}], Articles found: ${articles.length}`);
 
         // Generate answer
         const answer = await answerKnowledgeBaseQuestion(question, articles);

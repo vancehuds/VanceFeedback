@@ -87,7 +87,11 @@ export async function reinitAI() {
  * @returns {boolean}
  */
 export function isAIAvailable() {
-    return aiProvider !== null;
+    const available = aiProvider !== null;
+    if (!available) {
+        console.warn('[AI] isAIAvailable check failed: aiProvider is null');
+    }
+    return available;
 }
 
 
