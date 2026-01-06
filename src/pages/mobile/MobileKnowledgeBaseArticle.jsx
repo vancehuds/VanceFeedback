@@ -13,8 +13,22 @@ export default function MobileKnowledgeBaseArticle() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchArticle();
+        checkKbStatus();
     }, [slug]);
+
+    const checkKbStatus = async () => {
+        try {
+            const res = await api.get('/settings/public');
+            if (res.data.knowledge_base_enabled === false) {
+                navigate('/m');
+                return;
+            }
+            fetchArticle();
+        } catch (err) {
+            console.error('Failed to check settings:', err);
+            fetchArticle();
+        }
+    };
 
     const fetchArticle = async () => {
         setLoading(true);

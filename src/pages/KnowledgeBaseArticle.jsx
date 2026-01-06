@@ -13,8 +13,23 @@ export default function KnowledgeBaseArticle() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchArticle();
+        checkKbStatus();
     }, [slug]);
+
+    const checkKbStatus = async () => {
+        try {
+            const res = await api.get('/settings/public');
+            if (res.data.knowledge_base_enabled === false) {
+                navigate('/');
+                return;
+            }
+            fetchArticle();
+        } catch (err) {
+            console.error('Failed to check settings:', err);
+            // Even if check fails, try to fetch article. If backend blocks it, it will fail there.
+            fetchArticle();
+        }
+    };
 
     const fetchArticle = async () => {
         setLoading(true);

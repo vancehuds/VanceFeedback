@@ -17,6 +17,12 @@ const requireSuperAdmin = (req, res, next) => {
 
 // Middleware to check if AI Q&A feature is enabled
 const requireAIQAEnabled = async (req, res, next) => {
+    // Check if KB itself is enabled
+    const kbEnabled = await getSetting('knowledge_base_enabled');
+    if (kbEnabled === false || kbEnabled === 'false') {
+        return res.status(403).json({ error: '知识库功能已关闭，AI 问答暂不可用' });
+    }
+
     const aiQaEnabled = await getSetting('ai_qa_enabled');
     if (aiQaEnabled !== true && aiQaEnabled !== 'true') {
         return res.status(403).json({ error: 'AI 知识库问答功能已关闭' });

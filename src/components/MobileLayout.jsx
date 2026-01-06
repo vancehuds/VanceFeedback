@@ -1,8 +1,9 @@
-import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Book, MessageSquarePlus, User } from 'lucide-react';
+import api from '../../api';
 
-const navItems = [
+const ALL_NAV_ITEMS = [
     { path: '/m', label: '首页', icon: Home, exact: true },
     { path: '/m/knowledge-base', label: '知识库', icon: Book },
     { path: '/m/feedback', label: '反馈', icon: MessageSquarePlus },
@@ -12,6 +13,26 @@ const navItems = [
 export default function MobileLayout() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
+
+    const [kbEnabled, setKbEnabled] = useState(true);
+
+    useEffect(() => {
+        const checkSettings = async () => {
+            try {
+                const res = await api.get('/settings/public');
+                setKbEnabled(res.data.knowledge_base_enabled !== false);
+            } catch (err) {
+                console.error('Failed to fetch settings:', err);
+            }
+        };
+        checkSettings();
+    }, []);
+
+    // Filter nav items
+    const navItems = ALL_NAV_ITEMS.filter(item => {
+        if (item.path === '/m/knowledge-base' && !kbEnabled) return false;
+        return true;
+    });
 
     // If not logged in, redirect to login for protected routes
     React.useEffect(() => {

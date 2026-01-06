@@ -5,12 +5,26 @@ import {
     Settings, Tag, Bell, ChevronLeft, ChevronRight, LogOut,
     Crown, Shield, Home, Menu, X, Book
 } from 'lucide-react';
+import api from '../../api';
 
 export default function AdminLayout() {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [kbEnabled, setKbEnabled] = useState(true);
     const navigate = useNavigate();
     const currentUser = useMemo(() => JSON.parse(localStorage.getItem('user')), []);
+
+    useEffect(() => {
+        const checkSettings = async () => {
+            try {
+                const res = await api.get('/settings/public');
+                setKbEnabled(res.data.knowledge_base_enabled !== false);
+            } catch (err) {
+                console.error('Failed to fetch settings:', err);
+            }
+        };
+        checkSettings();
+    }, []);
 
     // Check if user is admin
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'super_admin')) {
@@ -95,10 +109,18 @@ export default function AdminLayout() {
         }
     ];
 
-    // Filter items based on user role
-    const visibleNavItems = navItems.filter(item =>
-        item.roles.includes(currentUser.role)
-    );
+    // Filter items based on user role and settings
+    const visibleNavItems = navItems.filter(item => {
+        // Role check
+        if (!item.roles.includes(currentUser.role)) return false;
+
+        // Knowledge Base check
+        if (item.path === '/admin/knowledge-base' && !isSuperAdmin && !kbEnabled) {
+            return false;
+        }
+
+        return true;
+    });
 
     const handleLogout = () => {
         localStorage.removeItem('token');

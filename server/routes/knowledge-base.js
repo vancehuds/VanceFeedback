@@ -1,6 +1,9 @@
 import express from 'express';
 import { getDB } from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { getDB } from '../db.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { getSetting } from '../services/email.js';
 import { createAuditLog } from './audit.js';
 
 const router = express.Router();
@@ -14,6 +17,20 @@ const generateSlug = (title) => {
         .substring(0, 100);
 };
 
+// Middleware to check if KB is enabled
+const checkKBEnabled = async (req, res, next) => {
+    // Super admin can always access
+    if (req.user && req.user.role === 'super_admin') {
+        return next();
+    }
+
+    const enabled = await getSetting('knowledge_base_enabled');
+    if (enabled === false || enabled === 'false') {
+        return res.status(403).json({ error: '知识库功能已关闭' });
+    }
+    next();
+};
+
 // Middleware to check admin role
 const requireAdmin = (req, res, next) => {
     if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
@@ -25,7 +42,7 @@ const requireAdmin = (req, res, next) => {
 // ============ PUBLIC ENDPOINTS ============
 
 // Get all active categories (public)
-router.get('/categories', async (req, res) => {
+router.get('/categories', checkKBEnabled, async (req, res) => {
     try {
         const db = getDB();
         const [categories] = await db.query(`
@@ -42,7 +59,7 @@ router.get('/categories', async (req, res) => {
 });
 
 // Get published articles (public, with search & filter)
-router.get('/articles', async (req, res) => {
+router.get('/articles', checkKBEnabled, async (req, res) => {
     const { category, search, page = 1, limit = 10 } = req.query;
 
     let pageNum = parseInt(page);
@@ -107,7 +124,7 @@ router.get('/articles', async (req, res) => {
 });
 
 // Get single article by slug (public, increments view count)
-router.get('/articles/:slug', async (req, res) => {
+router.get('/articles/:slug', checkKBEnabled, async (req, res) => {
     const { slug } = req.params;
 
     try {
@@ -150,7 +167,7 @@ router.get('/articles/:slug', async (req, res) => {
 // ============ ADMIN ENDPOINTS ============
 
 // Get all categories (admin)
-router.get('/admin/categories', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/categories', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     try {
         const db = getDB();
         const [categories] = await db.query(`
@@ -166,7 +183,7 @@ router.get('/admin/categories', authenticateToken, requireAdmin, async (req, res
 });
 
 // Create category (admin)
-router.post('/admin/categories', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/admin/categories', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { name, description, icon = '📁', sort_order = 0, is_active = 1 } = req.body;
 
     if (!name || !name.trim()) {
@@ -194,7 +211,7 @@ router.post('/admin/categories', authenticateToken, requireAdmin, async (req, re
 });
 
 // Update category (admin)
-router.put('/admin/categories/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/categories/:id', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { id } = req.params;
     const { name, description, icon, sort_order, is_active } = req.body;
 
@@ -247,7 +264,7 @@ router.put('/admin/categories/:id', authenticateToken, requireAdmin, async (req,
 });
 
 // Delete category (admin)
-router.delete('/admin/categories/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/admin/categories/:id', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -278,7 +295,7 @@ router.delete('/admin/categories/:id', authenticateToken, requireAdmin, async (r
 });
 
 // Get all articles (admin)
-router.get('/admin/articles', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/articles', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { category, search, page = 1, limit = 20 } = req.query;
 
     let pageNum = parseInt(page);
@@ -337,7 +354,7 @@ router.get('/admin/articles', authenticateToken, requireAdmin, async (req, res) 
 });
 
 // Create article (admin)
-router.post('/admin/articles', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/admin/articles', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { title, category_id, content, is_published = 0 } = req.body;
 
     if (!title || !title.trim()) {
@@ -368,7 +385,7 @@ router.post('/admin/articles', authenticateToken, requireAdmin, async (req, res)
 });
 
 // Update article (admin)
-router.put('/admin/articles/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/articles/:id', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { id } = req.params;
     const { title, category_id, content, is_published } = req.body;
 
@@ -417,7 +434,7 @@ router.put('/admin/articles/:id', authenticateToken, requireAdmin, async (req, r
 });
 
 // Delete article (admin)
-router.delete('/admin/articles/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/admin/articles/:id', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -442,7 +459,7 @@ router.delete('/admin/articles/:id', authenticateToken, requireAdmin, async (req
 });
 
 // Toggle article publish status (admin)
-router.put('/admin/articles/:id/toggle', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/articles/:id/toggle', authenticateToken, requireAdmin, checkKBEnabled, async (req, res) => {
     const { id } = req.params;
 
     try {

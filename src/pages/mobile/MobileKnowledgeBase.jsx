@@ -37,6 +37,11 @@ export default function MobileKnowledgeBase() {
         try {
             // First check public settings
             const publicRes = await api.get('/settings/public');
+            if (publicRes.data.knowledge_base_enabled === false) {
+                navigate('/m');
+                return;
+            }
+
             if (!publicRes.data.ai_qa_enabled) {
                 setAiQaEnabled(false);
                 return;

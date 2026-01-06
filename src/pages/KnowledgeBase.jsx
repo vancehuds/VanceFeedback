@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Book, Search, FolderOpen, Eye, ArrowRight, ChevronRight, Home, MessageSquarePlus, Bot, Send, Sparkles, X, AlertCircle } from 'lucide-react';
 import Loading from '../components/Loading';
 
 export default function KnowledgeBase() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -35,6 +36,13 @@ export default function KnowledgeBase() {
     const checkAiQaStatus = async () => {
         try {
             const publicRes = await api.get('/settings/public');
+
+            // Check KB enabled status
+            if (publicRes.data.knowledge_base_enabled === false) {
+                navigate('/');
+                return;
+            }
+
             if (!publicRes.data.ai_qa_enabled) {
                 setAiQaEnabled(false);
                 return;

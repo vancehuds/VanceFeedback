@@ -58,6 +58,7 @@ router.get('/public', async (req, res) => {
             university_name: await getSetting('university_name') || 'xx大学',
             show_github_link: await getSetting('show_github_link') !== 'false' && await getSetting('show_github_link') !== false,
             ai_qa_enabled: await getSetting('ai_qa_enabled') === 'true' || await getSetting('ai_qa_enabled') === true,
+            knowledge_base_enabled: await getSetting('knowledge_base_enabled') !== 'false' && await getSetting('knowledge_base_enabled') !== false,
             publicKey: getPublicKey()
         };
         res.json(settings);
@@ -115,7 +116,9 @@ router.put('/', authenticateToken, requireSuperAdmin, async (req, res) => {
             'ai_qa_enabled',
             'ai_qa_daily_limit',
             'ai_qa_use_all_content',
-            'show_github_link'
+            'ai_qa_use_all_content',
+            'show_github_link',
+            'knowledge_base_enabled'
         ];
 
 

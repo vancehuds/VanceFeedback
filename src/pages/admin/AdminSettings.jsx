@@ -3,7 +3,7 @@ import api from '../../api';
 import {
     Settings, Save, RefreshCcw, CheckCircle, AlertCircle, Shield, Mail,
     AtSign, Sparkles, Bell, Monitor, Plus, Minus, Key, FileText, Send,
-    ToggleLeft, ToggleRight
+    ToggleLeft, ToggleRight, Book
 } from 'lucide-react';
 import Loading from '../../components/Loading';
 
@@ -689,6 +689,37 @@ export default function AdminSettings() {
                                     />
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Knowledge Base Settings */}
+                    <div className="border-t border-slate-100 pt-6"></div>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-emerald-100 rounded-lg">
+                            <Book className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-slate-800">知识库配置</h3>
+                            <p className="text-sm text-slate-500">管理知识库功能的开关</p>
+                        </div>
+                    </div>
+
+                    <div className="p-5 bg-emerald-50/50 rounded-xl space-y-4 border border-emerald-100">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div>
+                                    <h3 className="font-semibold text-slate-800">启用知识库功能</h3>
+                                    <p className="text-sm text-slate-500">
+                                        关闭后，知识库将在所有端隐藏，AI 问答也将停止服务
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => updateSetting('knowledge_base_enabled', settings.knowledge_base_enabled === false ? true : false)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.knowledge_base_enabled !== false ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.knowledge_base_enabled !== false ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
                         </div>
                     </div>
 

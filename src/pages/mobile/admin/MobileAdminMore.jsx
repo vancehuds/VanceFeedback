@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../api';
 import {
     Settings, Bell, Tag, Mail, FileText,
     Megaphone, Shield, ChevronRight, Monitor, Sparkles, Book
@@ -83,10 +84,32 @@ export default function MobileAdminMore() {
         );
     }
 
-    // Filter items based on current user's role
-    const visibleItems = settingsItems.filter(item =>
-        item.roles.includes(currentUser?.role)
-    );
+    const [kbEnabled, setKbEnabled] = useState(true);
+
+    useEffect(() => {
+        const checkSettings = async () => {
+            try {
+                const res = await api.get('/settings/public');
+                setKbEnabled(res.data.knowledge_base_enabled !== false);
+            } catch (err) {
+                console.error('Failed to fetch settings:', err);
+            }
+        };
+        checkSettings();
+    }, []);
+
+    // Filter items based on current user's role and settings
+    const visibleItems = settingsItems.filter(item => {
+        // Role check
+        if (!item.roles.includes(currentUser?.role)) return false;
+
+        // KB check
+        if (item.path === '/m/admin/knowledge-base' && currentUser?.role !== 'super_admin' && !kbEnabled) {
+            return false;
+        }
+
+        return true;
+    });
 
     return (
         <div className="mobile-page">
