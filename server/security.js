@@ -1,4 +1,14 @@
 import NodeRSA from 'node-rsa';
+import crypto from 'node:crypto';
+
+// Generate a random JWT secret if not provided in environment variables
+const generateJwtSecret = () => {
+    const secret = crypto.randomBytes(64).toString('hex');
+    console.warn('⚠️ JWT_SECRET not set in environment. Using randomly generated secret (will change on restart).');
+    return secret;
+};
+
+export const JWT_SECRET = process.env.JWT_SECRET || generateJwtSecret();
 
 // RSA Key Management
 // Supports: 1. Database (serverless-friendly), 2. Environment variable, 3. Dynamic generation
@@ -115,5 +125,3 @@ export const decryptData = (encryptedData) => {
         return null;
     }
 };
-
-export const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-prod';
