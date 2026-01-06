@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api';
-import { MessageSquare, CheckCircle, Clock, AlertCircle, Bell, ArrowRight, Sparkles, X, MapPin, Phone } from 'lucide-react';
+import { MessageSquare, CheckCircle, Clock, AlertCircle, Bell, ArrowRight, Sparkles, X, MapPin, Phone, Github } from 'lucide-react';
 import Loading from '../../components/Loading';
 import Skeleton from '../../components/Skeleton';
 import { formatDate, formatDateOnly } from '../../utils/date';
@@ -15,6 +15,7 @@ export default function MobileHome() {
     const [universityName, setUniversityName] = useState('');
     const [siteLogo, setSiteLogo] = useState('');
     const [selectedTicket, setSelectedTicket] = useState(null);
+    const [showGithubLink, setShowGithubLink] = useState(true); // Default to true
     const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
@@ -24,6 +25,10 @@ export default function MobileHome() {
             if (res.data.university_name) setUniversityName(res.data.university_name);
             if (res.data.site_logo_url) setSiteLogo(res.data.site_logo_url);
             else if (res.data.site_logo) setSiteLogo(res.data.site_logo);
+            // Get GitHub link visibility setting
+            if (res.data.show_github_link !== undefined) {
+                setShowGithubLink(res.data.show_github_link);
+            }
         }).catch(console.error);
 
         // Load announcements
@@ -294,6 +299,32 @@ export default function MobileHome() {
                     </div>
                 </div>
             )}
+
+            {/* Footer */}
+            <footer className="mt-12 pb-6 px-4">
+                <div className="text-center text-xs text-slate-400 space-y-2">
+                    <div className="flex items-center justify-center gap-2">
+                        <Link to="/about" className="hover:text-indigo-500 transition-colors">关于我们</Link>
+                        {showGithubLink && (
+                            <>
+                                <span>·</span>
+                                <a
+                                    href="https://github.com/vancehuds/VanceFeedback"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 hover:text-indigo-500 transition-colors"
+                                >
+                                    <Github size={12} />
+                                    <span>GitHub</span>
+                                </a>
+                            </>
+                        )}
+                    </div>
+                    <p>
+                        Powered by <a href="https://github.com/vancehuds/VanceFeedback" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 transition-colors font-medium">VanceFeedback</a>
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 }

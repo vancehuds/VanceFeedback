@@ -2,6 +2,14 @@
   "name": "qli-feedback-system",
   "version": "1.0.0",
   "description": "Library Feedback System with Client-Server Architecture",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vancehuds/VanceFeedback.git"
+  },
+  "homepage": "https://github.com/vancehuds/VanceFeedback#readme",
+  "bugs": {
+    "url": "https://github.com/vancehuds/VanceFeedback/issues"
+  },
   "main": "server/index.js",
   "type": "module",
   "scripts": {

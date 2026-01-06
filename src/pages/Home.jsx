@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
-import { MessageSquare, CheckCircle, ArrowRight, Sparkles, Clock, AlertCircle, X, ChevronRight, Bell } from 'lucide-react';
+import { MessageSquare, CheckCircle, ArrowRight, Sparkles, Clock, AlertCircle, X, ChevronRight, Bell, Github } from 'lucide-react';
 import Loading from '../components/Loading';
 import Skeleton from '../components/Skeleton';
 import { formatDate, formatDateOnly } from '../utils/date';
@@ -122,6 +122,7 @@ export default function Home() {
     const [siteLogo, setSiteLogo] = useState('');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
     const [universityName, setUniversityName] = useState(''); // Initialize empty for Skeleton
+    const [showGithubLink, setShowGithubLink] = useState(true); // Default to true
     const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
@@ -139,6 +140,10 @@ export default function Home() {
             }
             if (res.data.university_name) {
                 setUniversityName(res.data.university_name);
+            }
+            // Get GitHub link visibility setting
+            if (res.data.show_github_link !== undefined) {
+                setShowGithubLink(res.data.show_github_link);
             }
         }).catch(err => {
             console.error('Failed to load settings:', err);
@@ -479,7 +484,26 @@ export default function Home() {
             <footer className="mt-16 py-8 border-t border-slate-200 bg-white/50 backdrop-blur-sm">
                 <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
                     <p className="mb-2">© {new Date().getFullYear()} {universityName} · 反馈系统</p>
-                    <Link to="/about" className="text-slate-400 hover:text-indigo-500 transition-colors">关于我们</Link>
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                        <Link to="/about" className="text-slate-400 hover:text-indigo-500 transition-colors">关于我们</Link>
+                        {showGithubLink && (
+                            <>
+                                <span className="text-slate-300">·</span>
+                                <a
+                                    href="https://github.com/vancehuds/VanceFeedback"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-500 transition-colors"
+                                >
+                                    <Github size={16} />
+                                    <span>GitHub</span>
+                                </a>
+                            </>
+                        )}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                        Powered by <a href="https://github.com/vancehuds/VanceFeedback" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 transition-colors font-medium">VanceFeedback</a>
+                    </p>
                 </div>
             </footer>
 

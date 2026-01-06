@@ -1,5 +1,8 @@
 # VanceFeedback
 
+[![GitHub](https://img.shields.io/badge/GitHub-vancehuds%2FVanceFeedback-blue?logo=github)](https://github.com/vancehuds/VanceFeedback)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 VanceFeedback is a modern, intelligent feedback and ticket management system. Built with a client-server architecture using React for the frontend and Express for the backend, it integrates **Google Gemini AI** or **ZhiPu BigModel** powered automation to enhance the efficiency of user feedback collection, tracking, and management.
 
 > [中文文档](README.md)
@@ -56,7 +59,7 @@ VanceFeedback is a modern, intelligent feedback and ticket management system. Bu
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/VanceFeedback.git
+    git clone https://github.com/vancehuds/VanceFeedback.git
     cd VanceFeedback
     ```
 

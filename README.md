@@ -1,5 +1,8 @@
 # VanceFeedback
 
+[![GitHub](https://img.shields.io/badge/GitHub-vancehuds%2FVanceFeedback-blue?logo=github)](https://github.com/vancehuds/VanceFeedback)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 VanceFeedback 是一个现代化的智能反馈和工单管理系统。它采用客户端-服务器架构，前端基于 React，后端基于 Express，集成了 **Google Gemini AI** 或**ZhiPu BigModel** 驱动的自动化功能，旨在提升用户反馈收集、跟踪和管理的效率。
 
 > [English Documentation](README_EN.md)
@@ -56,7 +59,7 @@ VanceFeedback 是一个现代化的智能反馈和工单管理系统。它采用
 
 1.  **克隆仓库**
     ```bash
-    git clone https://github.com/yourusername/VanceFeedback.git
+    git clone https://github.com/vancehuds/VanceFeedback.git
     cd VanceFeedback
     ```
 
