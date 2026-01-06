@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Settings, Bell, Tag, Mail, FileText,
-    Megaphone, Shield, ChevronRight, Monitor, Sparkles
+    Megaphone, Shield, ChevronRight, Monitor, Sparkles, Book
 } from 'lucide-react';
 
 const settingsItems = [
@@ -11,42 +11,56 @@ const settingsItems = [
         description: '基础配置、邮件通知等',
         icon: Settings,
         gradient: 'from-indigo-500 to-purple-500',
-        path: '/m/admin/settings'
+        path: '/m/admin/settings',
+        roles: ['super_admin']
     },
     {
         label: '问题类型管理',
         description: '配置反馈类型',
         icon: Tag,
         gradient: 'from-blue-500 to-cyan-500',
-        path: '/m/admin/question-types'
+        path: '/m/admin/question-types',
+        roles: ['super_admin']
     },
     {
         label: '邮件模板',
         description: '自定义通知邮件内容',
         icon: Mail,
         gradient: 'from-emerald-500 to-green-500',
-        action: () => alert('请在电脑端配置邮件模板')
+        action: () => alert('请在电脑端配置邮件模板'),
+        roles: ['super_admin']
     },
     {
         label: '公告管理',
         description: '发布系统公告',
         icon: Megaphone,
         gradient: 'from-amber-500 to-orange-500',
-        path: '/m/admin/announcements'
+        path: '/m/admin/announcements',
+        roles: ['super_admin']
     },
     {
         label: '审计日志',
         description: '查看系统操作记录',
         icon: FileText,
         gradient: 'from-rose-500 to-pink-500',
-        path: '/m/admin/audit'
+        path: '/m/admin/audit',
+        roles: ['super_admin']
     },
     {
         label: 'AI 设置',
         description: '配置智能回复功能',
         icon: Sparkles,
         gradient: 'from-violet-500 to-purple-500',
-        action: () => alert('请在电脑端配置 AI 设置')
+        action: () => alert('请在电脑端配置 AI 设置'),
+        roles: ['super_admin']
+    },
+    {
+        label: '知识库管理',
+        description: '管理 FAQ 和帮助文档',
+        icon: Book,
+        gradient: 'from-emerald-500 to-teal-500',
+        path: '/m/admin/knowledge-base',
+        roles: ['admin', 'super_admin']
     },
 ];
 
@@ -54,8 +68,8 @@ export default function MobileAdminMore() {
     const navigate = useNavigate();
     const currentUser = useMemo(() => JSON.parse(localStorage.getItem('user')), []);
 
-    // Only super_admin can access this page
-    if (currentUser?.role !== 'super_admin') {
+    // Both admin and super_admin can access this page
+    if (currentUser?.role !== 'super_admin' && currentUser?.role !== 'admin') {
         return (
             <div className="mobile-page">
                 <header className="mobile-admin-header">
@@ -63,11 +77,16 @@ export default function MobileAdminMore() {
                 </header>
                 <div className="px-4 py-12 text-center text-slate-500">
                     <Shield size={48} className="mx-auto mb-4 opacity-50" />
-                    <p>此页面仅限超级管理员访问</p>
+                    <p>此页面仅限管理员访问</p>
                 </div>
             </div>
         );
     }
+
+    // Filter items based on current user's role
+    const visibleItems = settingsItems.filter(item =>
+        item.roles.includes(currentUser?.role)
+    );
 
     return (
         <div className="mobile-page">
@@ -94,7 +113,7 @@ export default function MobileAdminMore() {
                 </div>
 
                 {/* Settings Items */}
-                {settingsItems.map((item, index) => {
+                {visibleItems.map((item, index) => {
                     const Icon = item.icon;
                     return (
                         <div

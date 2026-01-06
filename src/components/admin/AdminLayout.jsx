@@ -47,6 +47,12 @@ export default function AdminLayout() {
             roles: ['admin', 'super_admin']
         },
         {
+            path: '/admin/knowledge-base',
+            icon: Book,
+            label: '知识库',
+            roles: ['admin', 'super_admin']
+        },
+        {
             path: '/admin/notifications',
             icon: Mail,
             label: '邮件通知',
@@ -86,12 +92,6 @@ export default function AdminLayout() {
             icon: Bell,
             label: '公告管理',
             roles: ['super_admin']
-        },
-        {
-            path: '/admin/knowledge-base',
-            icon: Book,
-            label: '知识库',
-            roles: ['admin', 'super_admin']
         }
     ];
 

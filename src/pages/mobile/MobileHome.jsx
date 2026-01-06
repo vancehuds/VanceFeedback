@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api';
-import { MessageSquare, CheckCircle, Clock, AlertCircle, Bell, ArrowRight, Sparkles, X, MapPin, Phone, Github } from 'lucide-react';
+import { MessageSquare, CheckCircle, Clock, AlertCircle, Bell, ArrowRight, Sparkles, X, MapPin, Phone, Github, Book, ChevronRight } from 'lucide-react';
 import Loading from '../../components/Loading';
 import Skeleton from '../../components/Skeleton';
 import { formatDate, formatDateOnly } from '../../utils/date';
@@ -134,6 +134,25 @@ export default function MobileHome() {
                     </Link>
                 </div>
                 <div className="mobile-hero-decoration" />
+            </div>
+
+            {/* Knowledge Base Link */}
+            <div className="px-4 mb-4">
+                <Link
+                    to="/m/knowledge-base"
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 active:scale-[0.98] transition-transform"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+                            <Book size={20} className="text-white" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-800">📚 知识库</h3>
+                            <p className="text-xs text-slate-500">FAQ · 常见问题解答</p>
+                        </div>
+                    </div>
+                    <ChevronRight size={20} className="text-emerald-500" />
+                </Link>
             </div>
 
             {/* Announcements */}

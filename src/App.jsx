@@ -31,6 +31,9 @@ import MobileAdminSettings from './pages/mobile/admin/MobileAdminSettings';
 import MobileAdminAnnouncements from './pages/mobile/admin/MobileAdminAnnouncements';
 import MobileAdminAudit from './pages/mobile/admin/MobileAdminAudit';
 import MobileAdminQuestionTypes from './pages/mobile/admin/MobileAdminQuestionTypes';
+import MobileAdminKnowledgeBase from './pages/mobile/admin/MobileAdminKnowledgeBase';
+import MobileKnowledgeBase from './pages/mobile/MobileKnowledgeBase';
+import MobileKnowledgeBaseArticle from './pages/mobile/MobileKnowledgeBaseArticle';
 import { shouldRedirectToMobile } from './utils/isMobile';
 
 // Desktop Admin Panel Imports
@@ -241,6 +244,9 @@ export default function App() {
                                     <Route path="notifications" element={<MobileNotificationSettings />} />
                                     <Route path="login" element={<MobileLogin />} />
                                 </Route>
+                                {/* Mobile KB Routes (outside MobileLayout for custom headers) */}
+                                <Route path="/m/knowledge-base" element={<MobileKnowledgeBase />} />
+                                <Route path="/m/knowledge-base/:slug" element={<MobileKnowledgeBaseArticle />} />
                                 {/* Desktop Admin Routes */}
                                 <Route path="/admin" element={<AdminLayout />}>
                                     <Route index element={<AdminTickets />} />
@@ -267,6 +273,7 @@ export default function App() {
                                     <Route path="announcements" element={<MobileAdminAnnouncements />} />
                                     <Route path="audit" element={<MobileAdminAudit />} />
                                     <Route path="question-types" element={<MobileAdminQuestionTypes />} />
+                                    <Route path="knowledge-base" element={<MobileAdminKnowledgeBase />} />
                                 </Route>
                                 <Route path="*" element={<NotFound />} />
                                 <Route path="/verify-human" element={<HumanVerification />} />
