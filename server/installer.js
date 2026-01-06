@@ -641,6 +641,48 @@ export const runInstaller = async (adminUser, adminPass) => {
     `;
     await db.query(kbArticlesTableSQL);
 
+    // 16. Create AI Bans Table
+    const aiBansTableSQL = isSQLite ? `
+        CREATE TABLE IF NOT EXISTS ai_bans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            reason TEXT,
+            banned_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (banned_by) REFERENCES users(id) ON DELETE SET NULL
+        )
+    ` : `
+        CREATE TABLE IF NOT EXISTS ai_bans (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL UNIQUE,
+            reason TEXT,
+            banned_by INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (banned_by) REFERENCES users(id) ON DELETE SET NULL
+        )
+    `;
+    await db.query(aiBansTableSQL);
+
+    // MIGRATION: Seed AI Q&A settings
+    try {
+        const settingsToSeed = [
+            { key: 'ai_qa_enabled', value: 'false' },
+            { key: 'ai_qa_daily_limit', value: '10' }
+        ];
+
+        for (const setting of settingsToSeed) {
+            const [rows] = await db.query("SELECT id FROM system_settings WHERE setting_key = ?", [setting.key]);
+            if (rows.length === 0) {
+                console.log(`Seeding: ${setting.key}...`);
+                await db.query("INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?)", [setting.key, setting.value]);
+            }
+        }
+    } catch (err) {
+        console.error('Migration failed for AI Q&A settings:', err);
+    }
+
     // 7. Create Super Admin (Only if credentials are provided)
     if (adminUser && adminPass) {
         const hashedPassword = await bcrypt.hash(adminPass, 10);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Book, Search, FolderOpen, Eye, ChevronRight, Sparkles, MessageSquarePlus } from 'lucide-react';
+import { Book, Search, FolderOpen, Eye, ChevronRight, Sparkles, MessageSquarePlus, Send, Bot, AlertCircle, X } from 'lucide-react';
 import Loading from '../../components/Loading';
 
 export default function MobileKnowledgeBase() {
@@ -14,13 +14,85 @@ export default function MobileKnowledgeBase() {
     const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || '');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
+    // AI Q&A State
+    const [aiQaEnabled, setAiQaEnabled] = useState(false);
+    const [showAiChat, setShowAiChat] = useState(false);
+    const [aiQuestion, setAiQuestion] = useState('');
+    const [aiAnswer, setAiAnswer] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState('');
+    const [aiStatus, setAiStatus] = useState({ remaining: 0, dailyLimit: 10, banned: false });
+
     useEffect(() => {
         fetchCategories();
+        checkAiQaStatus();
     }, []);
 
     useEffect(() => {
         fetchArticles();
     }, [activeCategory, searchParams]);
+
+    // Check AI Q&A feature status
+    const checkAiQaStatus = async () => {
+        try {
+            // First check public settings
+            const publicRes = await api.get('/settings/public');
+            if (!publicRes.data.ai_qa_enabled) {
+                setAiQaEnabled(false);
+                return;
+            }
+            setAiQaEnabled(true);
+
+            // Then check user's rate limit status (requires auth)
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const statusRes = await api.get('/ai-qa/status');
+                    setAiStatus({
+                        remaining: statusRes.data.remaining || 0,
+                        dailyLimit: statusRes.data.dailyLimit || 10,
+                        banned: statusRes.data.banned || false
+                    });
+                } catch (err) {
+                    // User not logged in or error - still show as enabled
+                }
+            }
+        } catch (err) {
+            console.error('Failed to check AI Q&A status:', err);
+        }
+    };
+
+    // Submit AI question
+    const handleAiAsk = async (e) => {
+        e.preventDefault();
+        if (!aiQuestion.trim() || aiLoading) return;
+
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setAiError('请先登录后使用 AI 问答功能');
+            return;
+        }
+
+        setAiLoading(true);
+        setAiError('');
+        setAiAnswer('');
+
+        try {
+            const res = await api.post('/ai-qa/ask', { question: aiQuestion });
+            setAiAnswer(res.data.answer);
+            setAiStatus(prev => ({
+                ...prev,
+                remaining: res.data.remaining
+            }));
+            setAiQuestion('');
+        } catch (err) {
+            const errorMsg = err.response?.data?.error || 'AI 问答失败，请稍后再试';
+            setAiError(errorMsg);
+        } finally {
+            setAiLoading(false);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -218,6 +290,122 @@ export default function MobileKnowledgeBase() {
                     </div>
                 )}
             </div>
+
+            {/* AI Q&A Section */}
+            {aiQaEnabled && (
+                <div className="px-4 pb-4">
+                    {/* Collapsed Button */}
+                    {!showAiChat && (
+                        <button
+                            onClick={() => setShowAiChat(true)}
+                            className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-2xl p-4 flex items-center justify-between shadow-lg hover:shadow-xl transition-shadow"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <Bot size={20} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-semibold">🤖 AI 智能问答</div>
+                                    <div className="text-xs text-white/80">基于知识库内容快速获取答案</div>
+                                </div>
+                            </div>
+                            <Sparkles size={20} />
+                        </button>
+                    )}
+
+                    {/* Expanded Chat Panel */}
+                    {showAiChat && (
+                        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Bot size={20} />
+                                    <span className="font-semibold">AI 智能问答</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs bg-white/20 px-2 py-1 rounded-lg">
+                                        剩余 {aiStatus.remaining}/{aiStatus.dailyLimit} 次
+                                    </span>
+                                    <button onClick={() => setShowAiChat(false)} className="p-1 hover:bg-white/20 rounded-lg">
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Chat Content */}
+                            <div className="p-4 space-y-4">
+                                {/* Banned Warning */}
+                                {aiStatus.banned && (
+                                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700 text-sm">
+                                        <AlertCircle size={16} />
+                                        您已被禁止使用 AI 功能
+                                    </div>
+                                )}
+
+                                {/* Answer Display */}
+                                {aiAnswer && (
+                                    <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+                                        <div className="flex items-start gap-2 mb-2">
+                                            <Bot size={16} className="text-purple-500 mt-0.5" />
+                                            <span className="text-xs font-medium text-purple-600">AI 回答</span>
+                                        </div>
+                                        <p className="text-slate-700 text-sm leading-relaxed">{aiAnswer}</p>
+                                    </div>
+                                )}
+
+                                {/* Error Display */}
+                                {aiError && (
+                                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700 text-sm">
+                                        <AlertCircle size={16} />
+                                        {aiError}
+                                    </div>
+                                )}
+
+                                {/* Loading */}
+                                {aiLoading && (
+                                    <div className="p-4 bg-slate-50 rounded-xl flex items-center gap-3">
+                                        <div className="animate-spin w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full" />
+                                        <span className="text-sm text-slate-600">AI 正在思考中...</span>
+                                    </div>
+                                )}
+
+                                {/* Input Form */}
+                                {!aiStatus.banned && (
+                                    <form onSubmit={handleAiAsk} className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={aiQuestion}
+                                            onChange={(e) => setAiQuestion(e.target.value)}
+                                            placeholder="输入您的问题..."
+                                            disabled={aiLoading || aiStatus.remaining <= 0}
+                                            className="flex-1 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100 focus:outline-none disabled:bg-slate-50 disabled:cursor-not-allowed"
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={!aiQuestion.trim() || aiLoading || aiStatus.remaining <= 0}
+                                            className="px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                        >
+                                            <Send size={16} />
+                                        </button>
+                                    </form>
+                                )}
+
+                                {/* Rate Limit Warning */}
+                                {aiStatus.remaining <= 0 && !aiStatus.banned && (
+                                    <p className="text-center text-xs text-slate-500">
+                                        今日问答次数已用完，明天再来吧~
+                                    </p>
+                                )}
+
+                                {/* Tips */}
+                                <p className="text-xs text-slate-400 text-center">
+                                    AI 仅根据知识库内容回答，答案仅供参考
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* CTA */}
             <div className="px-4 pb-8">

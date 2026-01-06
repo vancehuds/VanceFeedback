@@ -434,7 +434,43 @@ export default function AdminSettings() {
                                                 <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
                                             </div>
                                         </label>
+
+                                        <label className="flex items-center justify-between cursor-pointer group hover:bg-white p-2 rounded-lg transition-colors">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-slate-700">AI 知识库问答</span>
+                                                <span className="text-xs text-slate-400">用户可在知识库页面进行智能问答</span>
+                                            </div>
+                                            <div className="relative inline-flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={settings.ai_qa_enabled === true || settings.ai_qa_enabled === 'true'}
+                                                    onChange={(e) => updateSetting('ai_qa_enabled', e.target.checked)}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                                            </div>
+                                        </label>
                                     </div>
+
+                                    {/* AI Q&A Daily Limit */}
+                                    {(settings.ai_qa_enabled === true || settings.ai_qa_enabled === 'true') && (
+                                        <div className="p-3 bg-white border border-slate-200 rounded-lg">
+                                            <label className="flex items-center justify-between">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium text-slate-700">每日问答次数限制</span>
+                                                    <span className="text-xs text-slate-400">每个用户每天可使用AI问答的次数</span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max="100"
+                                                    value={settings.ai_qa_daily_limit || 10}
+                                                    onChange={(e) => updateSetting('ai_qa_daily_limit', parseInt(e.target.value) || 10)}
+                                                    className="w-20 border-2 border-slate-200 rounded-lg p-2 text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                />
+                                            </label>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Gemini Configuration */}

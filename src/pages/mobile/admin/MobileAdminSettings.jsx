@@ -138,6 +138,43 @@ export default function MobileAdminSettings() {
                     </div>
                 </section>
 
+                {/* AI Q&A Settings */}
+                <section className="space-y-3">
+                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">🤖 AI 知识库问答</h3>
+
+                    <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200">
+                        <div>
+                            <span className="text-sm font-medium text-slate-700">启用 AI 问答</span>
+                            <p className="text-xs text-slate-500">用户可在知识库使用 AI 问答</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={settings.ai_qa_enabled === true || settings.ai_qa_enabled === 'true'}
+                                onChange={e => handleChange('ai_qa_enabled', e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                        </label>
+                    </div>
+
+                    {(settings.ai_qa_enabled === true || settings.ai_qa_enabled === 'true') && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">每日次数限制</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={settings.ai_qa_daily_limit || 10}
+                                onChange={e => handleChange('ai_qa_daily_limit', parseInt(e.target.value) || 10)}
+                                className="mobile-input"
+                                placeholder="10"
+                            />
+                            <p className="text-xs text-slate-500 mt-1">每个用户每天可使用 AI 问答的次数</p>
+                        </div>
+                    )}
+                </section>
+
                 {/* Notification Settings */}
                 <section className="space-y-3">
                     <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">通知设置</h3>

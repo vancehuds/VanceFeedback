@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../api';
-import { Book, Search, FolderOpen, Eye, ArrowRight, ChevronRight, Home, MessageSquarePlus } from 'lucide-react';
+import { Book, Search, FolderOpen, Eye, ArrowRight, ChevronRight, Home, MessageSquarePlus, Bot, Send, Sparkles, X, AlertCircle } from 'lucide-react';
 import Loading from '../components/Loading';
 
 export default function KnowledgeBase() {
@@ -13,13 +13,78 @@ export default function KnowledgeBase() {
     const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || '');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
+    // AI Q&A State
+    const [aiQaEnabled, setAiQaEnabled] = useState(false);
+    const [showAiChat, setShowAiChat] = useState(false);
+    const [aiQuestion, setAiQuestion] = useState('');
+    const [aiAnswer, setAiAnswer] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState('');
+    const [aiStatus, setAiStatus] = useState({ remaining: 0, dailyLimit: 10, banned: false });
+
     useEffect(() => {
         fetchCategories();
+        checkAiQaStatus();
     }, []);
 
     useEffect(() => {
         fetchArticles();
     }, [activeCategory, searchParams]);
+
+    // Check AI Q&A feature status
+    const checkAiQaStatus = async () => {
+        try {
+            const publicRes = await api.get('/settings/public');
+            if (!publicRes.data.ai_qa_enabled) {
+                setAiQaEnabled(false);
+                return;
+            }
+            setAiQaEnabled(true);
+
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const statusRes = await api.get('/ai-qa/status');
+                    setAiStatus({
+                        remaining: statusRes.data.remaining || 0,
+                        dailyLimit: statusRes.data.dailyLimit || 10,
+                        banned: statusRes.data.banned || false
+                    });
+                } catch (err) {
+                    // User not logged in
+                }
+            }
+        } catch (err) {
+            console.error('Failed to check AI Q&A status:', err);
+        }
+    };
+
+    // Submit AI question
+    const handleAiAsk = async (e) => {
+        e.preventDefault();
+        if (!aiQuestion.trim() || aiLoading) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setAiError('请先登录后使用 AI 问答功能');
+            return;
+        }
+
+        setAiLoading(true);
+        setAiError('');
+        setAiAnswer('');
+
+        try {
+            const res = await api.post('/ai-qa/ask', { question: aiQuestion });
+            setAiAnswer(res.data.answer);
+            setAiStatus(prev => ({ ...prev, remaining: res.data.remaining }));
+            setAiQuestion('');
+        } catch (err) {
+            setAiError(err.response?.data?.error || 'AI 问答失败');
+        } finally {
+            setAiLoading(false);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -154,8 +219,8 @@ export default function KnowledgeBase() {
                             <button
                                 onClick={() => handleCategoryClick('')}
                                 className={`px-4 py-2 rounded-xl font-medium transition-all ${!activeCategory
-                                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
-                                        : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:text-emerald-600'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                                    : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:text-emerald-600'
                                     }`}
                             >
                                 全部
@@ -165,8 +230,8 @@ export default function KnowledgeBase() {
                                     key={cat.id}
                                     onClick={() => handleCategoryClick(cat.slug)}
                                     className={`px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${activeCategory === cat.slug
-                                            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
-                                            : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:text-emerald-600'
+                                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                                        : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:text-emerald-600'
                                         }`}
                                 >
                                     <span>{cat.icon}</span>
@@ -252,6 +317,104 @@ export default function KnowledgeBase() {
                             下一页
                         </button>
                     </div>
+                )}
+
+                {/* AI Q&A Sidebar */}
+                {aiQaEnabled && (
+                    <>
+                        {/* Floating Button */}
+                        {!showAiChat && (
+                            <button
+                                onClick={() => setShowAiChat(true)}
+                                className="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all flex items-center gap-3 z-50 group"
+                            >
+                                <Bot size={24} />
+                                <span className="font-medium">AI 智能问答</span>
+                                <Sparkles size={18} className="group-hover:animate-pulse" />
+                            </button>
+                        )}
+
+                        {/* Chat Panel */}
+                        {showAiChat && (
+                            <div className="fixed bottom-8 right-8 w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-fade-in">
+                                {/* Header */}
+                                <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Bot size={20} />
+                                        <span className="font-semibold">AI 智能问答</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs bg-white/20 px-2 py-1 rounded-lg">
+                                            剩余 {aiStatus.remaining}/{aiStatus.dailyLimit} 次
+                                        </span>
+                                        <button onClick={() => setShowAiChat(false)} className="p-1 hover:bg-white/20 rounded-lg">
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Chat Content */}
+                                <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
+                                    {aiStatus.banned && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700 text-sm">
+                                            <AlertCircle size={16} />
+                                            您已被禁止使用 AI 功能
+                                        </div>
+                                    )}
+
+                                    {aiAnswer && (
+                                        <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+                                            <div className="flex items-start gap-2 mb-2">
+                                                <Bot size={16} className="text-purple-500 mt-0.5" />
+                                                <span className="text-xs font-medium text-purple-600">AI 回答</span>
+                                            </div>
+                                            <p className="text-slate-700 text-sm leading-relaxed">{aiAnswer}</p>
+                                        </div>
+                                    )}
+
+                                    {aiError && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700 text-sm">
+                                            <AlertCircle size={16} />
+                                            {aiError}
+                                        </div>
+                                    )}
+
+                                    {aiLoading && (
+                                        <div className="p-4 bg-slate-50 rounded-xl flex items-center gap-3">
+                                            <div className="animate-spin w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full" />
+                                            <span className="text-sm text-slate-600">AI 正在思考中...</span>
+                                        </div>
+                                    )}
+
+                                    {!aiStatus.banned && (
+                                        <form onSubmit={handleAiAsk} className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={aiQuestion}
+                                                onChange={(e) => setAiQuestion(e.target.value)}
+                                                placeholder="输入您的问题..."
+                                                disabled={aiLoading || aiStatus.remaining <= 0}
+                                                className="flex-1 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100 focus:outline-none disabled:bg-slate-50"
+                                            />
+                                            <button
+                                                type="submit"
+                                                disabled={!aiQuestion.trim() || aiLoading || aiStatus.remaining <= 0}
+                                                className="px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl disabled:opacity-50 flex items-center"
+                                            >
+                                                <Send size={16} />
+                                            </button>
+                                        </form>
+                                    )}
+
+                                    {aiStatus.remaining <= 0 && !aiStatus.banned && (
+                                        <p className="text-center text-xs text-slate-500">今日问答次数已用完</p>
+                                    )}
+
+                                    <p className="text-xs text-slate-400 text-center">AI 仅根据知识库内容回答，答案仅供参考</p>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* CTA Section */}

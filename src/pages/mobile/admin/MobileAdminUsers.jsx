@@ -4,7 +4,7 @@ import {
     Users, Search, Shield, Crown, User, Plus, X,
     ChevronRight, Mail, Calendar, MoreVertical,
     FileText, UserCog, Eye, Key, Check, AlertCircle,
-    Ticket, CheckCircle, Clock, Edit3, Save, Loader2
+    Ticket, CheckCircle, Clock, Edit3, Save, Loader2, Bot, RotateCcw
 } from 'lucide-react';
 import Loading from '../../../components/Loading';
 import { formatDateOnly, formatDate } from '../../../utils/date';
@@ -118,6 +118,9 @@ export default function MobileAdminUsers() {
     const currentUser = useMemo(() => JSON.parse(localStorage.getItem('user')), []);
     const isSuperAdmin = currentUser?.role === 'super_admin';
 
+    // AI ban tracking
+    const [aiBans, setAiBans] = useState(new Set());
+
     // Debounce search query
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -137,7 +140,49 @@ export default function MobileAdminUsers() {
 
     useEffect(() => {
         fetchUsers();
+        if (isSuperAdmin) {
+            fetchAiBans();
+        }
     }, [pagination.page, debouncedSearchQuery, roleFilter]);
+
+    // Fetch AI bans
+    const fetchAiBans = async () => {
+        try {
+            const res = await api.get('/ai-qa/admin/banned');
+            setAiBans(new Set(res.data.map(b => b.user_id)));
+        } catch (err) {
+            console.error('Failed to fetch AI bans:', err);
+        }
+    };
+
+    // Toggle AI ban
+    const handleToggleAiBan = async (userId, isBanned) => {
+        const action = isBanned ? '解除封禁' : '封禁';
+        if (!confirm(`确定要${action}该用户的 AI 功能？`)) return;
+        try {
+            if (isBanned) {
+                await api.delete(`/ai-qa/admin/ban/${userId}`);
+            } else {
+                await api.post(`/ai-qa/admin/ban/${userId}`, { reason: '管理员操作' });
+            }
+            fetchAiBans();
+            setShowActionMenu(null);
+        } catch (err) {
+            alert(err.response?.data?.error || '操作失败');
+        }
+    };
+
+    // Reset AI rate limit
+    const handleResetAiLimit = async (userId) => {
+        if (!confirm('确定要重置该用户的今日 AI 问答次数？')) return;
+        try {
+            await api.post(`/ai-qa/admin/reset-limit/${userId}`);
+            alert('已成功重置');
+            setShowActionMenu(null);
+        } catch (err) {
+            alert(err.response?.data?.error || '操作失败');
+        }
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -503,6 +548,22 @@ export default function MobileAdminUsers() {
                                                                 取消管理员
                                                             </button>
                                                         )}
+                                                        {/* AI Management */}
+                                                        <div className="border-t border-slate-100 my-1" />
+                                                        <button
+                                                            onClick={() => handleToggleAiBan(user.id, aiBans.has(user.id))}
+                                                            className={`flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm ${aiBans.has(user.id) ? 'text-emerald-600 hover:bg-emerald-50' : 'text-orange-600 hover:bg-orange-50'}`}
+                                                        >
+                                                            <Bot size={14} />
+                                                            {aiBans.has(user.id) ? '解禁AI' : '禁用AI'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleResetAiLimit(user.id)}
+                                                            className="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-blue-600 hover:bg-blue-50"
+                                                        >
+                                                            <RotateCcw size={14} />
+                                                            重置AI次数
+                                                        </button>
                                                     </>
                                                 )}
                                             </div>

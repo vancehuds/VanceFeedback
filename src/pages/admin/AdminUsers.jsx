@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../api';
 import {
-    Users, UserPlus, Edit, X, Shield, Crown
+    Users, UserPlus, Edit, X, Shield, Crown, Bot, RotateCcw
 } from 'lucide-react';
 import Loading from '../../components/Loading';
 
@@ -18,6 +18,9 @@ export default function AdminUsers() {
 
     // Pagination
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
+    // AI ban tracking
+    const [aiBans, setAiBans] = useState(new Set());
 
     const fetchData = async () => {
         setLoading(true);
@@ -38,7 +41,20 @@ export default function AdminUsers() {
 
     useEffect(() => {
         fetchData();
+        if (currentUser.role === 'super_admin') {
+            fetchAiBans();
+        }
     }, [pagination.page]);
+
+    // Fetch AI bans
+    const fetchAiBans = async () => {
+        try {
+            const res = await api.get('/ai-qa/admin/banned');
+            setAiBans(new Set(res.data.map(b => b.user_id)));
+        } catch (err) {
+            console.error('Failed to fetch AI bans:', err);
+        }
+    };
 
     const handlePageChange = (newPage) => {
         setPagination(prev => ({ ...prev, page: newPage }));
@@ -49,6 +65,33 @@ export default function AdminUsers() {
         if (!confirm(`确定将该用户设置为 ${role === 'admin' ? '管理员' : '普通用户'}?`)) return;
         await api.post('/users/promote', { userId, role });
         fetchData();
+    };
+
+    // Toggle AI ban
+    const handleToggleAiBan = async (userId, isBanned) => {
+        const action = isBanned ? '解除封禁' : '封禁';
+        if (!confirm(`确定要${action}该用户的 AI 功能？`)) return;
+        try {
+            if (isBanned) {
+                await api.delete(`/ai-qa/admin/ban/${userId}`);
+            } else {
+                await api.post(`/ai-qa/admin/ban/${userId}`, { reason: '管理员操作' });
+            }
+            fetchAiBans();
+        } catch (err) {
+            alert(err.response?.data?.error || '操作失败');
+        }
+    };
+
+    // Reset AI rate limit
+    const handleResetAiLimit = async (userId) => {
+        if (!confirm('确定要重置该用户的今日 AI 问答次数？')) return;
+        try {
+            await api.post(`/ai-qa/admin/reset-limit/${userId}`);
+            alert('已成功重置');
+        } catch (err) {
+            alert(err.response?.data?.error || '操作失败');
+        }
     };
 
     const openCreateModal = () => {
@@ -201,6 +244,29 @@ export default function AdminUsers() {
                                                                         降级为用户
                                                                     </button>
                                                                 )}
+                                                            </>)}
+                                                        {/* AI Management - Super Admin Only */}
+                                                        {currentUser.role === 'super_admin' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleToggleAiBan(u.id, aiBans.has(u.id))}
+                                                                    className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${aiBans.has(u.id)
+                                                                        ? 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'
+                                                                        : 'text-orange-600 hover:text-orange-800 hover:bg-orange-50'
+                                                                        }`}
+                                                                    title={aiBans.has(u.id) ? '解除AI封禁' : '封禁AI'}
+                                                                >
+                                                                    <Bot size={14} />
+                                                                    {aiBans.has(u.id) ? '解禁AI' : '禁用AI'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleResetAiLimit(u.id)}
+                                                                    className="text-xs font-medium text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1"
+                                                                    title="重置AI问答次数"
+                                                                >
+                                                                    <RotateCcw size={14} />
+                                                                    重置次数
+                                                                </button>
                                                             </>
                                                         )}
                                                     </div>

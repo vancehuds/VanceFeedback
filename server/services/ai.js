@@ -389,3 +389,69 @@ ${JSON.stringify(ticketSummaries, null, 2)}
         throw new Error('趋势分析失败: ' + err.message);
     }
 }
+
+/**
+ * Answer a question based on knowledge base content
+ * Uses strict prompt to only answer from KB content, avoiding commitments
+ * @param {string} question - User's question
+ * @param {Array} articles - Related knowledge base articles (title, content)
+ * @returns {Promise<string>} AI-generated answer
+ */
+export async function answerKnowledgeBaseQuestion(question, articles = []) {
+    if (!isAIAvailable()) {
+        throw new Error('AI service not available. Please configure API keys.');
+    }
+
+    if (!articles || articles.length === 0) {
+        return '抱歉，知识库中暂无相关内容，您可以提交反馈获取人工帮助。';
+    }
+
+    // Build knowledge base context
+    const kbContext = articles.map((a, i) =>
+        `【文章${i + 1}】${a.title}\n${a.content}`
+    ).join('\n\n---\n\n');
+
+    const prompt = `你是一个知识库问答助手。请**严格**根据以下知识库内容回答用户问题。
+
+**重要规则：**
+1. 只能基于提供的知识库内容进行回答，不能编造或推测
+2. 如果知识库中没有相关信息，直接回复"抱歉，知识库中暂无相关内容"
+3. 不要做出任何承诺或保证
+4. 回答要精简扼要，控制在100字以内
+5. 使用友好的语气，但保持专业
+6. 不要透露你是AI或提到"知识库"等系统内部术语
+
+**知识库内容：**
+${kbContext}
+
+**用户问题：**
+${question}
+
+**请直接回答：**`;
+
+    try {
+        let text = '';
+        if (aiProvider === 'gemini') {
+            const model = genAI.getGenerativeModel({ model: geminiModel });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            text = response.text().trim();
+        } else if (aiProvider === 'bigmodel') {
+            text = await callBigModel(prompt);
+            text = text.trim();
+        }
+
+        // Clean up response - remove any markdown code blocks if present
+        text = text.replace(/```[\s\S]*?```/g, '').trim();
+
+        // Truncate if too long
+        if (text.length > 300) {
+            text = text.substring(0, 297) + '...';
+        }
+
+        return text || '抱歉，暂时无法回答您的问题，请稍后再试。';
+    } catch (err) {
+        console.error('Knowledge base Q&A failed:', err);
+        throw new Error('AI问答失败: ' + err.message);
+    }
+}
