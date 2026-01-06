@@ -97,6 +97,9 @@ docker-compose -f docker-compose.separated.yml up -d --build
 更多详情请参考 [DOCKER_DEPLOY.md](docs/DOCKER_DEPLOY.md)。
 
 ### 2. Vercel 部署
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvancehuds%2FVanceFeedback&env=JWT_SECRET,DB_TYPE,DB_HOST,DB_PORT,DB_USER,DB_NAME,DB_PASSWORD&project-name=VanceFeedback)
+
 支持前后端分离部署到 Vercel Serverless 环境：
 - 前端可直接导入 Vercel 部署。
 - 后端作为 Serverless Functions 运行。  

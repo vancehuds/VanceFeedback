@@ -97,6 +97,10 @@ docker-compose -f docker-compose.separated.yml up -d --build
 For more details, refer to [DOCKER_DEPLOY.md](docs/DOCKER_DEPLOY.md).
 
 ### 2. Vercel Deployment
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvancehuds%2FVanceFeedback&env=JWT_SECRET,DB_TYPE,DB_HOST,DB_PORT,DB_USER,DB_NAME,DB_PASSWORD&project-name=VanceFeedback)
+
+
 Supports separated frontend and backend deployment on Vercel Serverless:
 - Frontend can be imported directly to Vercel.
 - Backend runs as Serverless Functions.
