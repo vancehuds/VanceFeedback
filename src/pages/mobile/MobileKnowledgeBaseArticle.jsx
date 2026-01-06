@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Book, ArrowLeft, Eye, Calendar, User, ChevronRight, MessageSquarePlus, Home } from 'lucide-react';
+import { Book, ChevronLeft, Eye, Calendar, User, ChevronRight, MessageSquarePlus } from 'lucide-react';
 import Loading from '../../components/Loading';
 
 export default function MobileKnowledgeBaseArticle() {
@@ -41,23 +41,18 @@ export default function MobileKnowledgeBaseArticle() {
 
     if (error || !article) {
         return (
-            <div className="mobile-page bg-slate-50 min-h-screen">
-                <header className="mobile-header bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-                    <button onClick={() => navigate('/m/knowledge-base')} className="p-1 -ml-1">
-                        <ArrowLeft size={24} />
-                    </button>
-                    <span className="font-bold">知识库</span>
-                    <div className="w-6" />
-                </header>
+            <div className="mobile-page">
                 <div className="flex flex-col items-center justify-center py-16 px-4">
-                    <Book className="w-16 h-16 text-slate-300 mb-4" />
+                    <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mb-4">
+                        <Book className="w-10 h-10 text-emerald-500" />
+                    </div>
                     <h2 className="text-xl font-bold text-slate-700 mb-2">{error || '文章不存在'}</h2>
                     <p className="text-slate-500 mb-6 text-center">抱歉，无法找到该文章</p>
                     <Link
                         to="/m/knowledge-base"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-xl font-medium"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-medium shadow-lg"
                     >
-                        <ArrowLeft size={18} />
+                        <ChevronLeft size={18} />
                         返回知识库
                     </Link>
                 </div>
@@ -66,16 +61,21 @@ export default function MobileKnowledgeBaseArticle() {
     }
 
     return (
-        <div className="mobile-page bg-slate-50 min-h-screen">
-            {/* Header */}
-            <header className="mobile-header sticky top-0 z-50 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-                <button onClick={() => navigate('/m/knowledge-base')} className="p-1 -ml-1">
-                    <ArrowLeft size={24} />
-                </button>
-                <span className="font-bold truncate max-w-[200px]">{article.title}</span>
-                <Link to="/m" className="p-1">
-                    <Home size={20} />
-                </Link>
+        <div className="mobile-page">
+            {/* Sticky Header */}
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-4 py-3">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate('/m/knowledge-base')}
+                        className="w-9 h-9 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl flex items-center justify-center text-emerald-600 active:scale-95 transition-transform"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs text-emerald-600 font-medium">📚 知识库</p>
+                        <h1 className="text-sm font-bold text-slate-800 truncate">{article.title}</h1>
+                    </div>
+                </div>
             </header>
 
             {/* Article Content */}
@@ -163,16 +163,6 @@ export default function MobileKnowledgeBaseArticle() {
                 </div>
             </div>
 
-            {/* Back Button */}
-            <div className="px-4 pb-8">
-                <button
-                    onClick={() => navigate('/m/knowledge-base')}
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-medium"
-                >
-                    <ArrowLeft size={18} />
-                    返回知识库
-                </button>
-            </div>
         </div>
     );
 }

@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, MessageSquarePlus, User } from 'lucide-react';
+import { Home, Book, MessageSquarePlus, User } from 'lucide-react';
 
 const navItems = [
     { path: '/m', label: '首页', icon: Home, exact: true },
+    { path: '/m/knowledge-base', label: '知识库', icon: Book },
     { path: '/m/feedback', label: '反馈', icon: MessageSquarePlus },
     { path: '/m/profile', label: '我的', icon: User },
 ];

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Book, Search, FolderOpen, Eye, ChevronRight, ChevronLeft, Home, MessageSquarePlus } from 'lucide-react';
+import { Book, Search, FolderOpen, Eye, ChevronRight, Sparkles, MessageSquarePlus } from 'lucide-react';
 import Loading from '../../components/Loading';
 
 export default function MobileKnowledgeBase() {
@@ -74,44 +74,42 @@ export default function MobileKnowledgeBase() {
     };
 
     return (
-        <div className="mobile-page bg-slate-50 min-h-screen">
-            {/* Header */}
-            <header className="mobile-header sticky top-0 z-50 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/m')} className="p-1 -ml-1">
-                        <ChevronLeft size={24} />
-                    </button>
-                    <div className="flex items-center gap-2">
-                        <Book size={20} />
+        <div className="mobile-page">
+            {/* Hero Header */}
+            <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 pb-6 pt-4 px-4 relative overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                            <Book size={24} className="text-white" />
+                        </div>
                         <div>
-                            <h1 className="text-base font-bold">知识库</h1>
-                            <p className="text-xs text-emerald-100">FAQ · 帮助中心</p>
+                            <h1 className="text-xl font-bold text-white">📚 知识库</h1>
+                            <p className="text-sm text-white/80">FAQ · 帮助中心</p>
                         </div>
                     </div>
-                </div>
-                <Link to="/m" className="p-2 bg-white/20 rounded-lg">
-                    <Home size={18} />
-                </Link>
-            </header>
 
-            {/* Search Bar */}
-            <div className="px-4 py-4 bg-gradient-to-b from-emerald-600 to-emerald-500">
-                <form onSubmit={handleSearch} className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="搜索文章..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-16 py-3 rounded-xl bg-white border-0 shadow-lg text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-white/50"
-                    />
-                    <button
-                        type="submit"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium"
-                    >
-                        搜索
-                    </button>
-                </form>
+                    {/* Search Bar */}
+                    <form onSubmit={handleSearch} className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="搜索常见问题..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-20 py-3.5 rounded-2xl bg-white/95 backdrop-blur-sm border-0 shadow-lg text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-white/50 focus:outline-none"
+                        />
+                        <button
+                            type="submit"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-medium shadow-md hover:shadow-lg transition-shadow"
+                        >
+                            搜索
+                        </button>
+                    </form>
+                </div>
             </div>
 
             {/* Categories */}
@@ -121,8 +119,8 @@ export default function MobileKnowledgeBase() {
                         <button
                             onClick={() => handleCategoryClick('')}
                             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${!activeCategory
-                                    ? 'bg-emerald-500 text-white'
-                                    : 'bg-slate-100 text-slate-600'
+                                ? 'bg-emerald-500 text-white'
+                                : 'bg-slate-100 text-slate-600'
                                 }`}
                         >
                             全部
@@ -132,8 +130,8 @@ export default function MobileKnowledgeBase() {
                                 key={cat.id}
                                 onClick={() => handleCategoryClick(cat.slug)}
                                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1 ${activeCategory === cat.slug
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'bg-slate-100 text-slate-600'
+                                    ? 'bg-emerald-500 text-white'
+                                    : 'bg-slate-100 text-slate-600'
                                     }`}
                             >
                                 <span>{cat.icon}</span>

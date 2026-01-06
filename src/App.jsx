@@ -237,6 +237,8 @@ export default function App() {
                                 {/* Mobile Routes */}
                                 <Route path="/m" element={<MobileLayout />}>
                                     <Route index element={<MobileHome />} />
+                                    <Route path="knowledge-base" element={<MobileKnowledgeBase />} />
+                                    <Route path="knowledge-base/:slug" element={<MobileKnowledgeBaseArticle />} />
                                     <Route path="feedback" element={<MobileFeedback />} />
                                     <Route path="profile" element={<MobileProfile />} />
                                     <Route path="edit-profile" element={<MobileEditProfile />} />
@@ -244,9 +246,6 @@ export default function App() {
                                     <Route path="notifications" element={<MobileNotificationSettings />} />
                                     <Route path="login" element={<MobileLogin />} />
                                 </Route>
-                                {/* Mobile KB Routes (outside MobileLayout for custom headers) */}
-                                <Route path="/m/knowledge-base" element={<MobileKnowledgeBase />} />
-                                <Route path="/m/knowledge-base/:slug" element={<MobileKnowledgeBaseArticle />} />
                                 {/* Desktop Admin Routes */}
                                 <Route path="/admin" element={<AdminLayout />}>
                                     <Route index element={<AdminTickets />} />
