@@ -125,3 +125,7 @@ For traditional server environments, please refer to [DEPLOY_SEPARATED.md](docs/
 ## License
 
 [MIT License](LICENSE)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=vancehuds/VanceFeedback&type=Date)](https://star-history.com/#vancehuds/VanceFeedback&Date)

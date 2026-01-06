@@ -123,3 +123,7 @@ docker-compose -f docker-compose.separated.yml up -d --build
 ## 许可证
 
 [MIT License](LICENSE)
+
+## Star 历史
+
+[![Star 历史](https://api.star-history.com/svg?repos=vancehuds/VanceFeedback&type=Date)](https://star-history.com/#vancehuds/VanceFeedback&Date)
