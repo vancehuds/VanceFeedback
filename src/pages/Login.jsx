@@ -3,6 +3,7 @@ import 'altcha';
 import { useNavigate, Link } from 'react-router-dom';
 import api, { encryptPayload, setPublicKey } from '../api';
 import { Lock, User, BookOpen, ArrowRight, Sparkles, Mail, Send, Hash, UserCircle, ArrowLeft, KeyRound } from 'lucide-react';
+import { isMobile } from '../utils/isMobile';
 import Skeleton from '../components/Skeleton';
 import Loading from '../components/Loading';
 
@@ -40,11 +41,9 @@ export default function Login() {
 
     useEffect(() => {
         // Auto-redirect mobile users to mobile login page
-        import('../utils/isMobile').then(({ isMobile }) => {
-            if (isMobile()) {
-                navigate('/m/login', { replace: true });
-            }
-        });
+        if (isMobile()) {
+            navigate('/m/login', { replace: true });
+        }
 
         fetchSettings();
 
