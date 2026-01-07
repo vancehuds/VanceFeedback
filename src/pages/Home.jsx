@@ -123,6 +123,7 @@ export default function Home() {
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
     const [universityName, setUniversityName] = useState(''); // Initialize empty for Skeleton
     const [showGithubLink, setShowGithubLink] = useState(true); // Default to true
+    const [knowledgeBaseEnabled, setKnowledgeBaseEnabled] = useState(true);
     const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
@@ -144,6 +145,9 @@ export default function Home() {
             // Get GitHub link visibility setting
             if (res.data.show_github_link !== undefined) {
                 setShowGithubLink(res.data.show_github_link);
+            }
+            if (res.data.knowledge_base_enabled !== undefined) {
+                setKnowledgeBaseEnabled(res.data.knowledge_base_enabled !== false);
             }
         }).catch(err => {
             console.error('Failed to load settings:', err);
@@ -334,8 +338,9 @@ export default function Home() {
                 </div>
 
                 {/* Knowledge Base Quick Link */}
-                <div className="mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                    <Link
+                {knowledgeBaseEnabled && (
+                    <div className="mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                        <Link
                         to="/knowledge-base"
                         className="group block bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-6 border border-emerald-200 hover:border-emerald-300 shadow-sm hover:shadow-lg transition-all"
                     >
@@ -354,8 +359,9 @@ export default function Home() {
                                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </div>
                         </div>
-                    </Link>
-                </div>
+                        </Link>
+                    </div>
+                )}
 
                 {/* Announcements Section */}
                 {announcements.length > 0 && (
