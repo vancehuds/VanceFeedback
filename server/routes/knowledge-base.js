@@ -11,9 +11,8 @@ const router = express.Router();
 const generateSlug = (title) => {
     return title
         .toLowerCase()
-        .replace(/[^\w\u4e00-\u9fa5]/g, '-') // Keep Chinese characters - replace each non-word/non-Chinese char
-        .replace(/-+/g, '-') // Collapse multiple dashes into one
-        .replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
+        .replace(/[^\w\u4e00-\u9fa5]+/g, '-') // Keep Chinese characters - replace sequences of non-word/non-Chinese chars with single dash
+        .replace(/^-|-$/g, '') // Remove leading/trailing dashes
         .substring(0, 100);
 };
 
