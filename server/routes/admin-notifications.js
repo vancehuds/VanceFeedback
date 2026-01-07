@@ -64,8 +64,8 @@ router.post('/', authenticateToken, requireAdminRole, async (req, res) => {
         return res.status(400).json({ error: '邮箱地址不能为空' });
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Email validation - using a safer regex pattern to prevent ReDoS
+    const emailRegex = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: '邮箱地址格式不正确' });
     }

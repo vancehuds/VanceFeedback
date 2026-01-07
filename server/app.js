@@ -112,13 +112,14 @@ app.get('/api/status', (req, res) => {
     });
 });
 
-// Setup Routes (Always available, but logic inside checks if already configured)
-app.use('/api/setup', setupRoutes);
-
 // Rate Limiter & User Identification
 // Apply soft authentication (identifyUser) and rate limiting (rateLimiter)
 // identifyUser must come before rateLimiter so we can check roles
 app.use('/api', identifyUser, rateLimiter);
+
+// Setup Routes (Always available, but logic inside checks if already configured)
+// Now protected by rate limiting to prevent DoS attacks
+app.use('/api/setup', setupRoutes);
 
 // App Routes (Only work if configured)
 const requireConfig = (req, res, next) => {

@@ -62,7 +62,7 @@ router.put('/:key', authenticateToken, requireSuperAdmin, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        console.error(`Error updating email template ${key}:`, err);
+        console.error('Error updating email template:', { key, error: err });
         res.status(500).json({ error: 'Failed to update template' });
     }
 });
