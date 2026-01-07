@@ -37,12 +37,17 @@ const getLimitByRole = (req) => {
     }
 };
 
+const shouldSkipRateLimit = (req) => {
+    return req.path === '/captcha/challenge' || req.path === '/captcha/verify-limit';
+};
+
 export const rateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: (req) => getLimitByRole(req),
     standardHeaders: true,
     legacyHeaders: false,
     store: new DatabaseStore(),
+    skip: (req) => shouldSkipRateLimit(req),
     keyGenerator: (req) => {
         // Use user ID if logged in, otherwise IP
         return req.user ? `user_${req.user.id}` : `ip_${req.ip}`;

@@ -47,11 +47,16 @@ router.post('/verify-limit', identifyUser, async (req, res) => {
         if (valid) {
             // Reset rate limit for this user/IP
             // rateLimiter.resetKey(key) is available in express-rate-limit v6+
-            const key = req.user ? `user_${req.user.id}` : `ip_${req.ip}`;
+            const keys = new Set([`ip_${req.ip}`]);
+            if (req.user && req.user.id) {
+                keys.add(`user_${req.user.id}`);
+            }
 
             if (rateLimiter.resetKey) {
-                rateLimiter.resetKey(key);
-                console.log(`Rate limit reset for key: ${key}`);
+                for (const key of keys) {
+                    rateLimiter.resetKey(key);
+                    console.log(`Rate limit reset for key: ${key}`);
+                }
             }
 
             res.json({ success: true, message: 'Verification successful. Limit reset.' });

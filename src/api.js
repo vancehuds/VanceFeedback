@@ -87,6 +87,8 @@ api.interceptors.response.use(
             // Handle Rate Limiting
             if (error.response.status === 429) {
                 if (!window.location.pathname.includes('/verify-human')) {
+                    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+                    sessionStorage.setItem('rateLimitReturnTo', returnTo);
                     // Redirect to verification page
                     window.location.href = '/verify-human';
                 }
