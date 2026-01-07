@@ -113,9 +113,9 @@ app.get('/api/status', (req, res) => {
 });
 
 // Rate Limiter & User Identification
-// Apply soft authentication (identifyUser) and rate limiting (rateLimiter)
-// identifyUser must come before rateLimiter so we can check roles
-app.use('/api', identifyUser, rateLimiter);
+// Apply rate limiting (rateLimiter) before soft authentication (identifyUser)
+// This ensures expensive identification logic is also protected by rate limiting
+app.use('/api', rateLimiter, identifyUser);
 
 // Setup Routes (Always available, but logic inside checks if already configured)
 // Now protected by rate limiting to prevent DoS attacks
