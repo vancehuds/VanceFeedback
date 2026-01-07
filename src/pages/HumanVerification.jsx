@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import 'altcha';
 import api from '../api';
 
 const HumanVerification = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [verifying, setVerifying] = useState(false);
     const [error, setError] = useState(null);
     const [challengeUrl, setChallengeUrl] = useState('/api/captcha/challenge');
@@ -48,9 +49,14 @@ const HumanVerification = () => {
             await api.post('/captcha/verify-limit', { payload });
             console.log('Verification successful, redirecting...');
 
-            // Verification successful, redirect
-            // Try to go back, or go home if no history
-            if (window.history.length > 2) {
+            const params = new URLSearchParams(location.search);
+            const storedReturnTo = sessionStorage.getItem('rateLimitReturnTo');
+            const returnTo = params.get('returnTo') || storedReturnTo;
+
+            if (returnTo && returnTo !== '/verify-human') {
+                sessionStorage.removeItem('rateLimitReturnTo');
+                navigate(returnTo, { replace: true });
+            } else if (window.history.length > 2) {
                 console.log('Navigating back -1');
                 navigate(-1);
             } else {
