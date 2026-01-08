@@ -132,4 +132,4 @@ docker-compose -f docker-compose.separated.yml up -d --build
 
 ## Star 历史
 
-[![Star 历史](https://api.star-history.com/svg?repos=vancehuds/VanceFeedback&type=Date)](https://star-history.com/#vancehuds/VanceFeedback&Date)
+[![Stargazers over time](https://starchart.cc/vancehuds/VanceFeedback.svg?variant=adaptive)](https://starchart.cc/vancehuds/VanceFeedback)
