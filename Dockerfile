@@ -1,5 +1,5 @@
 # Build Stage for Frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:24-alpine AS frontend-builder
 WORKDIR /app
 COPY package*.json ./
 COPY vite.config.js ./
@@ -12,7 +12,7 @@ RUN npm install
 RUN npm run build
 
 # Production Stage
-FROM node:20-alpine
+FROM node:24-alpine
 WORKDIR /app
 
 # Copy Backend Files

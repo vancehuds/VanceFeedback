@@ -1,7 +1,7 @@
 # Backend Dockerfile for VanceFeedback
 # This builds only the backend server without frontend assets
 
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
