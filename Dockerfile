@@ -19,17 +19,9 @@ WORKDIR /app
 COPY package*.json ./
 COPY server/ ./server/
 
-# Install native build tools required by sqlite3 (node-gyp)
-# py3-setuptools provides 'distutils' which was removed in Python 3.12
-RUN apk add --no-cache python3 py3-setuptools make g++ gcc
-
 # Install ONLY production dependencies
-# Note: we are in the root directory, so we install root dependencies which include backend packages
-# We use --omit=dev to avoid installing devDependencies like Vite/Tailwind in production
+# Note: better-sqlite3 ships prebuilt binaries, no Python/node-gyp needed
 RUN npm install --omit=dev
-
-# Remove build tools to keep the image small
-RUN apk del python3 make g++ gcc
 
 # Copy Built Frontend from Builder Stage
 COPY --from=frontend-builder /app/dist ./dist

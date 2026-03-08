@@ -2,8 +2,7 @@ import mysql from 'mysql2/promise';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import Database from 'better-sqlite3';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(__dirname, 'config', 'db_config.json');
@@ -43,21 +42,30 @@ class SQLiteAdapter {
     }
 
     async query(sql, params) {
-        // SQLite doesn't strictly support same ? syntax as MySQL in all cases if not using sqlite3 verbose,
-        // but 'sqlite' wrapper and 'sqlite3' support ? placeholders.
-        // However, we need to handle the return format.
-
         const normalizedSql = sql.trim().toUpperCase();
         if (normalizedSql.startsWith('SELECT') || normalizedSql.startsWith('PRAGMA')) {
-            const rows = await this.db.all(sql, params);
+            const stmt = this.db.prepare(sql);
+            const rows = params && params.length > 0 ? stmt.all(...params) : stmt.all();
             return [rows, null];
         } else {
-            const result = await this.db.run(sql, params);
-            return [{
-                affectedRows: result.changes,
-                insertId: result.lastID,
-                warningStatus: 0,
-            }, null];
+            try {
+                const stmt = this.db.prepare(sql);
+                const result = params && params.length > 0 ? stmt.run(...params) : stmt.run();
+                return [{
+                    affectedRows: result.changes,
+                    insertId: Number(result.lastInsertRowid),
+                    warningStatus: 0,
+                }, null];
+            } catch (e) {
+                // For DDL statements (CREATE, ALTER, DROP) that can't be prepared
+                if (normalizedSql.startsWith('CREATE') || normalizedSql.startsWith('ALTER') ||
+                    normalizedSql.startsWith('DROP') || normalizedSql.startsWith('BEGIN') ||
+                    normalizedSql.startsWith('COMMIT') || normalizedSql.startsWith('ROLLBACK')) {
+                    this.db.exec(sql);
+                    return [{ affectedRows: 0, insertId: 0, warningStatus: 0 }, null];
+                }
+                throw e;
+            }
         }
     }
 
@@ -71,14 +79,14 @@ class SQLiteAdapter {
             query: this.query.bind(this),
             execute: this.execute.bind(this),
             release: () => { }, // No-op for SQLite
-            beginTransaction: () => this.db.run('BEGIN'),
-            commit: () => this.db.run('COMMIT'),
-            rollback: () => this.db.run('ROLLBACK')
+            beginTransaction: () => this.db.exec('BEGIN'),
+            commit: () => this.db.exec('COMMIT'),
+            rollback: () => this.db.exec('ROLLBACK')
         };
     }
 
     async end() {
-        await this.db.close();
+        this.db.close();
     }
 }
 
@@ -113,10 +121,9 @@ export const initDB = async (config) => {
             fs.mkdirSync(dataDir, { recursive: true });
         }
 
-        const db = await open({
-            filename: dbPath,
-            driver: sqlite3.Database
-        });
+        const db = new Database(dbPath);
+        // Enable WAL mode for better concurrent read performance
+        db.pragma('journal_mode = WAL');
         pool = new SQLiteAdapter(db);
         console.log("SQLite Database connected successfully.");
     } else {
@@ -164,18 +171,15 @@ export const getDB = () => {
 export const testConnection = async (tempConfig) => {
     if (tempConfig.type === 'sqlite') {
         // Just verify we can open/create the file
-        // We'll simulate it by checking if we CAN write to the data directory
         const dataDir = path.join(__dirname, 'data');
         if (!fs.existsSync(dataDir)) {
             fs.mkdirSync(dataDir, { recursive: true });
         }
         // Actually trying to open it is best test
-        const db = await open({
-            filename: path.join(dataDir, 'test_connection.db'),
-            driver: sqlite3.Database
-        });
-        await db.close();
-        fs.unlinkSync(path.join(dataDir, 'test_connection.db')); // Cleanup
+        const testPath = path.join(dataDir, 'test_connection.db');
+        const db = new Database(testPath);
+        db.close();
+        fs.unlinkSync(testPath); // Cleanup
         return;
     }
 
