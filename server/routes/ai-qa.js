@@ -94,7 +94,8 @@ router.get('/status', authenticateToken, async (req, res) => {
             remaining: Math.max(0, dailyLimit - usedCount)
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -213,7 +214,8 @@ router.get('/admin/banned', authenticateToken, requireSuperAdmin, async (req, re
         `);
         res.json(bans);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -250,7 +252,8 @@ router.post('/admin/ban/:userId', authenticateToken, requireSuperAdmin, async (r
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -280,7 +283,8 @@ router.delete('/admin/ban/:userId', authenticateToken, requireSuperAdmin, async 
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -314,7 +318,8 @@ router.post('/admin/reset-limit/:userId', authenticateToken, requireSuperAdmin, 
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -338,7 +343,8 @@ router.get('/admin/usage/:userId', authenticateToken, requireSuperAdmin, async (
             banInfo: bans[0] || null
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

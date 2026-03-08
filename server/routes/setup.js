@@ -31,7 +31,8 @@ router.post('/install', async (req, res) => {
         res.json({ success: true, message: "Installation successful" });
     } catch (err) {
         console.error("Install Error:", err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

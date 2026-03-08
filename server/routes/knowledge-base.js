@@ -53,7 +53,8 @@ router.get('/categories', checkKBEnabled, async (req, res) => {
         `);
         res.json(categories);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -118,7 +119,8 @@ router.get('/articles', checkKBEnabled, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -159,7 +161,8 @@ router.get('/articles/:slug', checkKBEnabled, async (req, res) => {
 
         res.json({ article, related });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -177,7 +180,8 @@ router.get('/admin/categories', authenticateToken, requireAdmin, checkKBEnabled,
         `);
         res.json(categories);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -205,7 +209,8 @@ router.post('/admin/categories', authenticateToken, requireAdmin, checkKBEnabled
 
         res.json({ success: true, id: result.insertId, slug });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -258,7 +263,8 @@ router.put('/admin/categories/:id', authenticateToken, requireAdmin, checkKBEnab
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -289,7 +295,8 @@ router.delete('/admin/categories/:id', authenticateToken, requireAdmin, checkKBE
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -348,7 +355,8 @@ router.get('/admin/articles', authenticateToken, requireAdmin, checkKBEnabled, a
             }
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -379,7 +387,8 @@ router.post('/admin/articles', authenticateToken, requireAdmin, checkKBEnabled, 
 
         res.json({ success: true, id: result.insertId, slug });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -428,7 +437,8 @@ router.put('/admin/articles/:id', authenticateToken, requireAdmin, checkKBEnable
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -453,7 +463,8 @@ router.delete('/admin/articles/:id', authenticateToken, requireAdmin, checkKBEna
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -479,7 +490,8 @@ router.put('/admin/articles/:id/toggle', authenticateToken, requireAdmin, checkK
 
         res.json({ success: true, is_published: newStatus });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

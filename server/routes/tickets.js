@@ -285,7 +285,8 @@ router.get('/stats', async (req, res) => {
         });
     } catch (err) {
         console.error('Stats API Error:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -353,14 +354,27 @@ router.get('/', async (req, res) => {
 
         const [tickets] = await db.query(dataQuery, dataParams);
 
-        // For each ticket, fetch its replies (optimization: could be done with JOIN or separate query for IDs)
-        // Keeping it simple as per original logic, but note that N+1 issue exists.
-        for (const ticket of tickets) {
-            const [replies] = await db.query(
-                'SELECT * FROM ticket_replies WHERE ticket_id = ? ORDER BY created_at ASC',
-                [ticket.id]
+        // Batch-fetch all replies for the current page's tickets (avoids N+1)
+        if (tickets.length > 0) {
+            const ticketIds = tickets.map(t => t.id);
+            const placeholders = ticketIds.map(() => '?').join(',');
+            const [allReplies] = await db.query(
+                `SELECT * FROM ticket_replies WHERE ticket_id IN (${placeholders}) ORDER BY created_at ASC`,
+                ticketIds
             );
-            ticket.replies = replies;
+            // Group replies by ticket_id
+            const repliesByTicket = new Map();
+            for (const reply of allReplies) {
+                if (!repliesByTicket.has(reply.ticket_id)) {
+                    repliesByTicket.set(reply.ticket_id, []);
+                }
+                repliesByTicket.get(reply.ticket_id).push(reply);
+            }
+            for (const ticket of tickets) {
+                ticket.replies = repliesByTicket.get(ticket.id) || [];
+            }
+        } else {
+            // No tickets, no replies to fetch
         }
 
         // Compatibility: Return wrapping object if pagination parameters are used, 
@@ -380,7 +394,8 @@ router.get('/', async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -409,7 +424,8 @@ router.post('/', recaptchaMiddleware, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -461,7 +477,54 @@ router.put('/:id/rate', authenticateToken, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
+    }
+});
+
+// Batch review tickets - Admin only
+// NOTE: Must be registered BEFORE /:id to avoid Express matching 'batch-review' as an id param
+router.put('/batch-review', authenticateToken, async (req, res) => {
+    const { ticketIds, is_public } = req.body;
+
+    // Check if user is admin or super_admin
+    if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
+        return res.status(403).json({ error: '仅管理员可以审核工单' });
+    }
+
+    if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
+        return res.status(400).json({ error: '请选择要审核的工单' });
+    }
+
+    try {
+        const db = getDB();
+        const newValue = is_public ? 1 : 0;
+
+        // Batch update is_public field
+        await db.query(
+            'UPDATE tickets SET is_public = ? WHERE id IN (?)',
+            [newValue, ticketIds]
+        );
+
+        // Create audit log
+        await createAuditLog(
+            req.user.id,
+            req.user.username,
+            'batch_review_tickets',
+            'ticket',
+            null,
+            {
+                ticket_ids: ticketIds,
+                count: ticketIds.length,
+                action: is_public ? '批量设为公开' : '批量设为待审核'
+            },
+            req.ip
+        );
+
+        res.json({ success: true, count: ticketIds.length });
+    } catch (err) {
+        console.error('Batch review error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -506,51 +569,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
         }
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Batch review tickets - Admin only
-router.put('/batch-review', authenticateToken, async (req, res) => {
-    const { ticketIds, is_public } = req.body;
-
-    // Check if user is admin or super_admin
-    if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
-        return res.status(403).json({ error: '仅管理员可以审核工单' });
-    }
-
-    if (!ticketIds || !Array.isArray(ticketIds) || ticketIds.length === 0) {
-        return res.status(400).json({ error: '请选择要审核的工单' });
-    }
-
-    try {
-        const db = getDB();
-        const newValue = is_public ? 1 : 0;
-
-        // Batch update is_public field
-        await db.query(
-            'UPDATE tickets SET is_public = ? WHERE id IN (?)',
-            [newValue, ticketIds]
-        );
-
-        // Create audit log
-        await createAuditLog(
-            req.user.id,
-            req.user.username,
-            'batch_review_tickets',
-            'ticket',
-            null,
-            {
-                ticket_ids: ticketIds,
-                count: ticketIds.length,
-                action: is_public ? '批量设为公开' : '批量设为待审核'
-            },
-            req.ip
-        );
-
-        res.json({ success: true, count: ticketIds.length });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Update ticket error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -597,7 +617,8 @@ router.put('/:id/review', authenticateToken, async (req, res) => {
 
         res.json({ success: true, is_public: newValue });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -614,7 +635,8 @@ router.get('/:ticketId/replies', async (req, res) => {
         );
         res.json(replies);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -652,7 +674,8 @@ router.post('/:ticketId/replies', authenticateToken, async (req, res) => {
 
         res.json({ success: true, reply: newReply[0] });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -697,7 +720,8 @@ router.put('/:ticketId/replies/:replyId', authenticateToken, async (req, res) =>
 
         res.json({ success: true, reply: updatedReply[0] });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -731,7 +755,8 @@ router.delete('/:ticketId/replies/:replyId', authenticateToken, async (req, res)
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -764,7 +789,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -817,7 +843,8 @@ router.post('/:id/suggest-reply', authenticateToken, async (req, res) => {
         res.json({ success: true, suggestion });
     } catch (err) {
         console.error('AI reply suggestion failed:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -936,7 +963,8 @@ router.get('/search-similar', async (req, res) => {
         res.json({ similar_tickets: tickets });
     } catch (err) {
         console.error('Similar ticket search failed:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -1005,7 +1033,8 @@ router.get('/:id/summary', authenticateToken, async (req, res) => {
         res.json({ success: true, cached: false, ...summary });
     } catch (err) {
         console.error('AI ticket summary failed:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -1022,7 +1051,8 @@ router.get('/ai-trends/history', authenticateToken, async (req, res) => {
         res.json({ success: true, history: rows });
     } catch (err) {
         console.error('Failed to fetch AI history:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -1203,7 +1233,8 @@ router.get('/ai-trends', authenticateToken, async (req, res) => {
         res.json({ success: true, cached: false, ...resultData });
     } catch (err) {
         console.error('AI trend analysis failed:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

@@ -68,14 +68,14 @@ export const initSecurityKey = async (db) => {
                 }
             }
 
-            key.setOptions({ encryptionScheme: 'pkcs1_oaep' });
+            key.setOptions({ encryptionScheme: { scheme: 'pkcs1_oaep', hash: 'sha256' } });
             keyInitialized = true;
         } catch (err) {
             console.error('Failed to initialize RSA key:', err.message);
             // Fallback to temporary key (will not persist across restarts)
             if (!key) {
                 key = new NodeRSA({ b: 2048 });
-                key.setOptions({ encryptionScheme: 'pkcs1_oaep' });
+                key.setOptions({ encryptionScheme: { scheme: 'pkcs1_oaep', hash: 'sha256' } });
                 console.warn('⚠️ Using temporary RSA key (not persisted)');
             }
         }
@@ -107,7 +107,7 @@ const initFallbackKey = () => {
         console.warn('⚠️ RSA key generated dynamically. Set RSA_PRIVATE_KEY for production.');
     }
 
-    key.setOptions({ encryptionScheme: 'pkcs1_oaep' });
+    key.setOptions({ encryptionScheme: { scheme: 'pkcs1_oaep', hash: 'sha256' } });
 };
 
 export const getPublicKey = () => {

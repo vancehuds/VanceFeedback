@@ -22,7 +22,8 @@ router.get('/', async (req, res) => {
         );
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -35,7 +36,8 @@ router.get('/all', authenticateToken, requireSuperAdmin, async (req, res) => {
         );
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -83,7 +85,8 @@ router.post('/', authenticateToken, requireSuperAdmin, async (req, res) => {
             message: '问题类型添加成功'
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -128,7 +131,8 @@ router.put('/:id', authenticateToken, requireSuperAdmin, async (req, res) => {
 
         res.json({ success: true, message: '问题类型更新成功' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -165,7 +169,8 @@ router.delete('/:id', authenticateToken, requireSuperAdmin, async (req, res) => 
         await db.query('DELETE FROM question_types WHERE id = ?', [id]);
         res.json({ success: true, message: '问题类型删除成功' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

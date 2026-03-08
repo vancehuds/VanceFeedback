@@ -80,7 +80,8 @@ router.get('/', authenticateToken, requireSuperAdmin, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -91,7 +92,8 @@ router.get('/actions', authenticateToken, requireSuperAdmin, async (req, res) =>
         const [actions] = await db.query('SELECT DISTINCT action FROM audit_logs ORDER BY action');
         res.json(actions.map(a => a.action));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import { isConfigured, loadConfig, initDB } from './db.js';
 import { getPublicKey, initSecurityKey } from './security.js';
 import { getDB } from './db.js';
@@ -31,11 +30,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // Trust proxy for correct IP address in audit logs behind reverse proxy
-app.set('trust proxy', true);
+// Only trust the first proxy hop to prevent X-Forwarded-For spoofing
+app.set('trust proxy', 1);
 
 // Middleware
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(',')
+        : undefined // allow all in dev; configure in production
+}));
+app.use(express.json());
 
 // Initialization flag to prevent multiple initializations
 let isInitialized = false;
@@ -146,7 +150,7 @@ app.use('/api/ai-qa', requireConfig, aiQaRoutes);
 
 // SPA Fallback - Serve index.html for any non-API routes
 // This allows the React Router to handle client-side routing
-app.get(/.*/, (req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 

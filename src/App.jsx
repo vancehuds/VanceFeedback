@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
@@ -6,52 +6,60 @@ import api, { setPublicKey } from './api';
 import { formatDate } from './utils/date';
 import ErrorBoundary from './components/ErrorBoundary';
 import Loading from './components/Loading';
-import SetupWizard from './pages/SetupWizard';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Home from './pages/Home';
-import AboutUs from './pages/AboutUs';
-import UserCenter from './pages/UserCenter';
-import NotFound from './pages/NotFound';
-import MobileLayout from './components/MobileLayout';
-import MobileHome from './pages/mobile/MobileHome';
-import MobileFeedback from './pages/mobile/MobileFeedback';
-import MobileProfile from './pages/mobile/MobileProfile';
-import MobileEditProfile from './pages/mobile/MobileEditProfile';
-import MobileChangePassword from './pages/mobile/MobileChangePassword';
-import MobileNotificationSettings from './pages/mobile/MobileNotificationSettings';
-import MobileLogin from './pages/mobile/MobileLogin';
-import MobileAdminLayout from './components/MobileAdminLayout';
-import MobileAdminTickets from './pages/mobile/admin/MobileAdminTickets';
-import MobileAdminReview from './pages/mobile/admin/MobileAdminReview';
-import MobileAdminData from './pages/mobile/admin/MobileAdminData';
-import MobileAdminUsers from './pages/mobile/admin/MobileAdminUsers';
-import MobileAdminMore from './pages/mobile/admin/MobileAdminMore';
-import MobileAdminSettings from './pages/mobile/admin/MobileAdminSettings';
-import MobileAdminAnnouncements from './pages/mobile/admin/MobileAdminAnnouncements';
-import MobileAdminAudit from './pages/mobile/admin/MobileAdminAudit';
-import MobileAdminQuestionTypes from './pages/mobile/admin/MobileAdminQuestionTypes';
-import MobileAdminKnowledgeBase from './pages/mobile/admin/MobileAdminKnowledgeBase';
-import MobileKnowledgeBase from './pages/mobile/MobileKnowledgeBase';
-import MobileKnowledgeBaseArticle from './pages/mobile/MobileKnowledgeBaseArticle';
 import { shouldRedirectToMobile } from './utils/isMobile';
 
-// Desktop Admin Panel Imports
-import AdminLayout from './components/admin/AdminLayout';
-import AdminTickets from './pages/admin/AdminTickets';
-import AdminTicketReview from './pages/admin/AdminTicketReview';
-import AdminAnalysis from './pages/admin/AdminAnalysis';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminNotifications from './pages/admin/AdminNotifications';
-import AdminAudit from './pages/admin/AdminAudit';
-import AdminSettings from './pages/admin/AdminSettings';
-import AdminQuestionTypes from './pages/admin/AdminQuestionTypes';
-import AdminEmailTemplates from './pages/admin/AdminEmailTemplates';
-import AdminAnnouncements from './pages/admin/AdminAnnouncements';
-import AdminKnowledgeBase from './pages/admin/AdminKnowledgeBase';
-import HumanVerification from './pages/HumanVerification';
-import KnowledgeBase from './pages/KnowledgeBase';
-import KnowledgeBaseArticle from './pages/KnowledgeBaseArticle';
+// Eagerly loaded pages (critical path)
+import Home from './pages/Home';
+
+// Lazy-loaded pages (code splitting)
+const SetupWizard = React.lazy(() => import('./pages/SetupWizard'));
+const Login = React.lazy(() => import('./pages/Login'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const AboutUs = React.lazy(() => import('./pages/AboutUs'));
+const UserCenter = React.lazy(() => import('./pages/UserCenter'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
+const HumanVerification = React.lazy(() => import('./pages/HumanVerification'));
+const KnowledgeBase = React.lazy(() => import('./pages/KnowledgeBase'));
+const KnowledgeBaseArticle = React.lazy(() => import('./pages/KnowledgeBaseArticle'));
+
+// Mobile pages (lazy)
+const MobileLayout = React.lazy(() => import('./components/MobileLayout'));
+const MobileHome = React.lazy(() => import('./pages/mobile/MobileHome'));
+const MobileFeedback = React.lazy(() => import('./pages/mobile/MobileFeedback'));
+const MobileProfile = React.lazy(() => import('./pages/mobile/MobileProfile'));
+const MobileEditProfile = React.lazy(() => import('./pages/mobile/MobileEditProfile'));
+const MobileChangePassword = React.lazy(() => import('./pages/mobile/MobileChangePassword'));
+const MobileNotificationSettings = React.lazy(() => import('./pages/mobile/MobileNotificationSettings'));
+const MobileLogin = React.lazy(() => import('./pages/mobile/MobileLogin'));
+const MobileKnowledgeBase = React.lazy(() => import('./pages/mobile/MobileKnowledgeBase'));
+const MobileKnowledgeBaseArticle = React.lazy(() => import('./pages/mobile/MobileKnowledgeBaseArticle'));
+
+// Mobile Admin pages (lazy)
+const MobileAdminLayout = React.lazy(() => import('./components/MobileAdminLayout'));
+const MobileAdminTickets = React.lazy(() => import('./pages/mobile/admin/MobileAdminTickets'));
+const MobileAdminReview = React.lazy(() => import('./pages/mobile/admin/MobileAdminReview'));
+const MobileAdminData = React.lazy(() => import('./pages/mobile/admin/MobileAdminData'));
+const MobileAdminUsers = React.lazy(() => import('./pages/mobile/admin/MobileAdminUsers'));
+const MobileAdminMore = React.lazy(() => import('./pages/mobile/admin/MobileAdminMore'));
+const MobileAdminSettings = React.lazy(() => import('./pages/mobile/admin/MobileAdminSettings'));
+const MobileAdminAnnouncements = React.lazy(() => import('./pages/mobile/admin/MobileAdminAnnouncements'));
+const MobileAdminAudit = React.lazy(() => import('./pages/mobile/admin/MobileAdminAudit'));
+const MobileAdminQuestionTypes = React.lazy(() => import('./pages/mobile/admin/MobileAdminQuestionTypes'));
+const MobileAdminKnowledgeBase = React.lazy(() => import('./pages/mobile/admin/MobileAdminKnowledgeBase'));
+
+// Desktop Admin pages (lazy)
+const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
+const AdminTickets = React.lazy(() => import('./pages/admin/AdminTickets'));
+const AdminTicketReview = React.lazy(() => import('./pages/admin/AdminTicketReview'));
+const AdminAnalysis = React.lazy(() => import('./pages/admin/AdminAnalysis'));
+const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'));
+const AdminNotifications = React.lazy(() => import('./pages/admin/AdminNotifications'));
+const AdminAudit = React.lazy(() => import('./pages/admin/AdminAudit'));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
+const AdminQuestionTypes = React.lazy(() => import('./pages/admin/AdminQuestionTypes'));
+const AdminEmailTemplates = React.lazy(() => import('./pages/admin/AdminEmailTemplates'));
+const AdminAnnouncements = React.lazy(() => import('./pages/admin/AdminAnnouncements'));
+const AdminKnowledgeBase = React.lazy(() => import('./pages/admin/AdminKnowledgeBase'));
 
 function AppGuard({ children }) {
     const [status, setStatus] = useState('loading'); // loading, configured, setup
@@ -64,12 +72,7 @@ function AppGuard({ children }) {
         setError(null);
         setErrorDetails(null);
         try {
-            console.log('[App] Checking API status...');
-            console.log('[App] API Base URL:', import.meta.env.VITE_API_BASE_URL || '/api');
-
             const res = await api.get('/status');
-
-            console.log('[App] API Status Response:', res.data);
 
             if (res.data.publicKey) {
                 setPublicKey(res.data.publicKey);
@@ -198,7 +201,7 @@ function AppGuard({ children }) {
         return <Loading variant="fullscreen" text="正在连接后端服务..." />;
     }
 
-    if (status === 'setup') return <SetupWizard />;
+    if (status === 'setup') return <Suspense fallback={<Loading variant="fullscreen" />}><SetupWizard /></Suspense>;
 
     return children;
 }
@@ -222,66 +225,67 @@ export default function App() {
             <BrowserRouter>
                 <Analytics />
                 <SpeedInsights />
-                <Routes>
-                    <Route path="/setup" element={<SetupWizard />} />
-                    <Route path="/*" element={
-                        <AppGuard>
-                            <Routes>
-                                <Route path="/" element={<MobileRedirect><Home /></MobileRedirect>} />
-                                <Route path="/about" element={<AboutUs />} />
-                                <Route path="/login" element={<Login />} />
-                                <Route path="/dashboard/*" element={<Dashboard />} />
-                                <Route path="/user-center" element={<UserCenter />} />
-                                <Route path="/knowledge-base" element={<KnowledgeBase />} />
-                                <Route path="/knowledge-base/:slug" element={<KnowledgeBaseArticle />} />
-                                {/* Mobile Routes */}
-                                <Route path="/m" element={<MobileLayout />}>
-                                    <Route index element={<MobileHome />} />
-                                    <Route path="knowledge-base" element={<MobileKnowledgeBase />} />
-                                    <Route path="knowledge-base/:slug" element={<MobileKnowledgeBaseArticle />} />
-                                    <Route path="feedback" element={<MobileFeedback />} />
-                                    <Route path="profile" element={<MobileProfile />} />
-                                    <Route path="edit-profile" element={<MobileEditProfile />} />
-                                    <Route path="change-password" element={<MobileChangePassword />} />
-                                    <Route path="notifications" element={<MobileNotificationSettings />} />
-                                    <Route path="login" element={<MobileLogin />} />
-                                </Route>
-                                {/* Desktop Admin Routes */}
-                                <Route path="/admin" element={<AdminLayout />}>
-                                    <Route index element={<AdminTickets />} />
-                                    <Route path="tickets" element={<AdminTickets />} />
-                                    <Route path="review" element={<AdminTicketReview />} />
-                                    <Route path="analysis" element={<AdminAnalysis />} />
-                                    <Route path="users" element={<AdminUsers />} />
-                                    <Route path="notifications" element={<AdminNotifications />} />
-                                    <Route path="audit" element={<AdminAudit />} />
-                                    <Route path="settings" element={<AdminSettings />} />
-                                    <Route path="question-types" element={<AdminQuestionTypes />} />
-                                    <Route path="email-templates" element={<AdminEmailTemplates />} />
-                                    <Route path="announcements" element={<AdminAnnouncements />} />
-                                    <Route path="knowledge-base" element={<AdminKnowledgeBase />} />
-                                </Route>
-                                {/* Mobile Admin Routes */}
-                                <Route path="/m/admin" element={<MobileAdminLayout />}>
-                                    <Route index element={<MobileAdminTickets />} />
-                                    <Route path="review" element={<MobileAdminReview />} />
-                                    <Route path="data" element={<MobileAdminData />} />
-                                    <Route path="users" element={<MobileAdminUsers />} />
-                                    <Route path="more" element={<MobileAdminMore />} />
-                                    <Route path="settings" element={<MobileAdminSettings />} />
-                                    <Route path="announcements" element={<MobileAdminAnnouncements />} />
-                                    <Route path="audit" element={<MobileAdminAudit />} />
-                                    <Route path="question-types" element={<MobileAdminQuestionTypes />} />
-                                    <Route path="knowledge-base" element={<MobileAdminKnowledgeBase />} />
-                                </Route>
-                                <Route path="*" element={<NotFound />} />
-                                <Route path="/verify-human" element={<HumanVerification />} />
-                            </Routes>
-                        </AppGuard>
-                    } />
-                </Routes>
+                <Suspense fallback={<Loading variant="fullscreen" />}>
+                    <Routes>
+                        <Route path="/setup" element={<SetupWizard />} />
+                        <Route path="/*" element={
+                            <AppGuard>
+                                <Routes>
+                                    <Route path="/" element={<MobileRedirect><Home /></MobileRedirect>} />
+                                    <Route path="/about" element={<AboutUs />} />
+                                    <Route path="/login" element={<Login />} />
+                                    <Route path="/dashboard/*" element={<Dashboard />} />
+                                    <Route path="/user-center" element={<UserCenter />} />
+                                    <Route path="/knowledge-base" element={<KnowledgeBase />} />
+                                    <Route path="/knowledge-base/:slug" element={<KnowledgeBaseArticle />} />
+                                    {/* Mobile Routes */}
+                                    <Route path="/m" element={<MobileLayout />}>
+                                        <Route index element={<MobileHome />} />
+                                        <Route path="knowledge-base" element={<MobileKnowledgeBase />} />
+                                        <Route path="knowledge-base/:slug" element={<MobileKnowledgeBaseArticle />} />
+                                        <Route path="feedback" element={<MobileFeedback />} />
+                                        <Route path="profile" element={<MobileProfile />} />
+                                        <Route path="edit-profile" element={<MobileEditProfile />} />
+                                        <Route path="change-password" element={<MobileChangePassword />} />
+                                        <Route path="notifications" element={<MobileNotificationSettings />} />
+                                        <Route path="login" element={<MobileLogin />} />
+                                    </Route>
+                                    {/* Desktop Admin Routes */}
+                                    <Route path="/admin" element={<AdminLayout />}>
+                                        <Route index element={<AdminTickets />} />
+                                        <Route path="tickets" element={<AdminTickets />} />
+                                        <Route path="review" element={<AdminTicketReview />} />
+                                        <Route path="analysis" element={<AdminAnalysis />} />
+                                        <Route path="users" element={<AdminUsers />} />
+                                        <Route path="notifications" element={<AdminNotifications />} />
+                                        <Route path="audit" element={<AdminAudit />} />
+                                        <Route path="settings" element={<AdminSettings />} />
+                                        <Route path="question-types" element={<AdminQuestionTypes />} />
+                                        <Route path="email-templates" element={<AdminEmailTemplates />} />
+                                        <Route path="announcements" element={<AdminAnnouncements />} />
+                                        <Route path="knowledge-base" element={<AdminKnowledgeBase />} />
+                                    </Route>
+                                    {/* Mobile Admin Routes */}
+                                    <Route path="/m/admin" element={<MobileAdminLayout />}>
+                                        <Route index element={<MobileAdminTickets />} />
+                                        <Route path="review" element={<MobileAdminReview />} />
+                                        <Route path="data" element={<MobileAdminData />} />
+                                        <Route path="users" element={<MobileAdminUsers />} />
+                                        <Route path="more" element={<MobileAdminMore />} />
+                                        <Route path="settings" element={<MobileAdminSettings />} />
+                                        <Route path="announcements" element={<MobileAdminAnnouncements />} />
+                                        <Route path="audit" element={<MobileAdminAudit />} />
+                                        <Route path="question-types" element={<MobileAdminQuestionTypes />} />
+                                        <Route path="knowledge-base" element={<MobileAdminKnowledgeBase />} />
+                                    </Route>
+                                    <Route path="*" element={<NotFound />} />
+                                    <Route path="/verify-human" element={<HumanVerification />} />
+                                </Routes>
+                            </AppGuard>
+                        } />
+                    </Routes>
+                </Suspense>
             </BrowserRouter>
         </ErrorBoundary>
     );
 }
-

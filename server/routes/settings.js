@@ -36,7 +36,8 @@ router.get('/', authenticateToken, requireSuperAdmin, async (req, res) => {
         }
         res.json(settings);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -63,7 +64,8 @@ router.get('/public', async (req, res) => {
         };
         res.json(settings);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -149,7 +151,8 @@ router.put('/', authenticateToken, requireSuperAdmin, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

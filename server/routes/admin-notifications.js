@@ -30,7 +30,8 @@ router.get('/', authenticateToken, requireAdminRole, async (req, res) => {
         );
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -52,7 +53,8 @@ router.get('/all', authenticateToken, requireSuperAdmin, async (req, res) => {
         `);
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -103,7 +105,8 @@ router.post('/', authenticateToken, requireAdminRole, async (req, res) => {
 
         res.json({ success: true, message: '通知邮箱添加成功' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -132,7 +135,8 @@ router.delete('/:id', authenticateToken, requireAdminRole, async (req, res) => {
         await db.query('DELETE FROM admin_notification_emails WHERE id = ?', [id]);
         res.json({ success: true, message: '通知邮箱删除成功' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

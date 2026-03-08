@@ -46,7 +46,7 @@ export const encryptPayload = async (data) => {
             keyBuffer,
             {
                 name: "RSA-OAEP",
-                hash: { name: "SHA-1" } // Standard for node-rsa compatibility usually
+                hash: { name: "SHA-256" }
             },
             false,
             ["encrypt"]

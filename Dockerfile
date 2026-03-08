@@ -40,4 +40,4 @@ RUN mkdir -p server/data && mkdir -p server/config
 EXPOSE 3000
 
 # Start Server
-CMD ["node", "--security-revert=CVE-2023-46809", "server/index.js"]
+CMD ["node", "server/index.js"]

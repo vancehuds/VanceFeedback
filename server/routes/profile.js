@@ -38,7 +38,8 @@ router.get('/', authenticateToken, async (req, res) => {
 
         res.json(profile);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -59,7 +60,8 @@ router.put('/nickname', authenticateToken, async (req, res) => {
         await db.query('UPDATE users SET nickname = ? WHERE id = ?', [nickname.trim(), req.user.id]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -120,7 +122,8 @@ router.post('/email/send-code', authenticateToken, async (req, res) => {
         await sendVerificationCode(email, code, 'email_change');
         res.json({ success: true, message: '验证码已发送到新邮箱' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -164,7 +167,8 @@ router.put('/email', authenticateToken, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -212,7 +216,8 @@ router.put('/password', authenticateToken, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -252,7 +257,8 @@ router.post('/forgot-password', async (req, res) => {
         await sendVerificationCode(email, code, 'password_reset');
         res.json({ success: true, message: '验证码已发送' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -286,7 +292,8 @@ router.post('/reset-password', async (req, res) => {
 
         res.json({ success: true, message: '密码重置成功' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -303,7 +310,8 @@ router.put('/notification-settings', authenticateToken, async (req, res) => {
         await db.query('UPDATE users SET email_notification_enabled = ? WHERE id = ?', [email_notification_enabled ? 1 : 0, req.user.id]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 

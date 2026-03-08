@@ -133,7 +133,8 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Fetch users error:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -162,7 +163,8 @@ router.post('/promote', authenticateToken, async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -199,7 +201,8 @@ router.post('/', authenticateToken, requireAdmin, canModifyRole, async (req, res
 
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
@@ -272,7 +275,8 @@ router.put('/:id', authenticateToken, requireAdmin, canModifyRole, async (req, r
         }
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Server error:', err);
+        res.status(500).json({ error: '操作失败，请稍后再试' });
     }
 });
 
