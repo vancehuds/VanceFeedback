@@ -20,7 +20,8 @@ COPY package*.json ./
 COPY server/ ./server/
 
 # Install native build tools required by sqlite3 (node-gyp)
-RUN apk add --no-cache python3 make g++ gcc
+# py3-setuptools provides 'distutils' which was removed in Python 3.12
+RUN apk add --no-cache python3 py3-setuptools make g++ gcc
 
 # Install ONLY production dependencies
 # Note: we are in the root directory, so we install root dependencies which include backend packages
