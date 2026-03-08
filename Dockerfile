@@ -7,21 +7,24 @@ COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY index.html ./
 COPY src/ ./src/
-# Install dependencies including devDependencies for build
-RUN npm install
-RUN npm run build
+# Install dependencies and build frontend in one layer
+RUN npm install && npm run build
 
 # Production Stage
 FROM node:24-alpine
 WORKDIR /app
+ENV NODE_ENV=production
 
 # Copy Backend Files
 COPY package*.json ./
 COPY server/ ./server/
 
-# Install ONLY production dependencies
-# Note: better-sqlite3 ships prebuilt binaries, no Python/node-gyp needed
-RUN npm install --omit=dev
+# Install build tools as a virtual package for clean removal,
+# build better-sqlite3 native module, then remove tools + cache
+RUN apk add --no-cache --virtual .build-deps python3 make g++ && \
+    npm install --omit=dev && \
+    npm cache clean --force && \
+    apk del .build-deps
 
 # Copy Built Frontend from Builder Stage
 COPY --from=frontend-builder /app/dist ./dist
