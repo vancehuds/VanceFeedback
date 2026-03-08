@@ -7,8 +7,9 @@ COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY index.html ./
 COPY src/ ./src/
-# Install dependencies and build frontend in one layer
-RUN npm install && npm run build
+# Install dependencies (--ignore-scripts skips better-sqlite3 native build, not needed for frontend)
+# then build the frontend with Vite
+RUN npm install --ignore-scripts && npm run build
 
 # Production Stage
 FROM node:24-alpine
