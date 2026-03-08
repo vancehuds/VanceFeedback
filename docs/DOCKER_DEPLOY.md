@@ -1,6 +1,6 @@
-# QLiFeedback Docker 部署指南
+# VanceFeedback Docker 部署指南
 
-本指南介绍了如何使用 Docker 部署 QLiFeedback 系统。该 Docker 镜像是一个多合一容器，同时运行后端 API 和前端应用。
+本指南介绍了如何使用 Docker 部署 VanceFeedback 系统。该 Docker 镜像是一个多合一容器，同时运行后端 API 和前端应用。
 
 ## 先决条件
 

@@ -4,57 +4,77 @@
 [![Docker](https://img.shields.io/badge/Docker-vancehud%2Fvancefeedback-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/vancehud/vancefeedback)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-VanceFeedback is a modern, intelligent feedback and ticket management system. Built with a client-server architecture using React for the frontend and Express for the backend, it integrates **Google Gemini AI** or **ZhiPu BigModel** powered automation to enhance the efficiency of user feedback collection, tracking, and management.
+VanceFeedback is a modern, intelligent feedback and ticket management system. Built with a client-server architecture using React for the frontend and Express for the backend, it integrates **Google Gemini AI** and **ZhiPu BigModel** dual AI engines to enhance the efficiency of user feedback collection, tracking, and management.
 
 > [中文文档](README.md)
 
-## Key Features
+## ✨ Key Features
 
 - **🤖 AI Intelligent Assistant**:
-  - Automatically generate ticket summaries to quickly grasp core issues using AI.
-  - Smart reply suggestions.
+  - Dual AI engine support: **Google Gemini** and **ZhiPu BigModel** with automatic fallback.
+  - Auto-generate ticket summaries to quickly grasp core issues using AI.
+  - Smart reply suggestions to improve support efficiency.
+  - **AI Knowledge Q&A**: Intelligent Q&A system powered by your knowledge base content.
+- **📚 Knowledge Base**:
+  - Create and manage knowledge base articles with categories.
+  - Public-facing knowledge base search and browsing.
+  - AI-powered knowledge base Q&A.
 - **📱 Mobile Optimization**:
   - Dedicated mobile admin dashboard designed with gesture support and responsive layouts.
+  - Full mobile admin features: tickets, users, analytics, knowledge base, announcements, settings, and more.
   - Manage tickets, view users, and handle feedback anytime, anywhere.
 - **🛡️ Enhanced Security**:
   - **Multi-CAPTCHA Support**: Flexibly supports **Cloudflare Turnstile** and **Altcha** (including Proof-of-Work verification).
   - **API Rate Limiting**: Role-based rate limiting strategies to protect against abuse and DDoS attacks.
-  - **Secure Authentication**: Email verification, JWT authentication, and encrypted password storage.
+  - **Secure Authentication**: Email verification, JWT authentication, RSA-encrypted transmission, and encrypted password storage.
 - **👥 Role-Based Access Control (RBAC)**:
-  - **User**: Submit feedback, track real-time ticket progress.
+  - **User**: Submit feedback, track real-time ticket progress, rate satisfaction.
   - **Admin**: Full ticket management capabilities with AI assistance.
   - **Super Admin**: System configuration, user management, audit log viewing.
-- **📈 Data Visualization**:
+- **📢 Announcement System**:
+  - Admin-published announcements with user-facing display.
+- **📊 Data Visualization**:
   - Admin dashboard providing time-based trend analysis, ticket statistics, and satisfaction distribution.
+- **⚙️ Rich System Administration**:
+  - **Setup Wizard**: Guided first-time deployment configuration for zero-barrier setup.
+  - **Custom Question Types**: Flexible ticket category definitions.
+  - **Email Template Management**: Customize notification email content.
+  - **Admin Notifications**: Real-time notifications for ticket changes.
+  - **DingTalk Notifications**: DingTalk webhook integration for new ticket alerts.
+  - **Audit Logs**: Complete system operation logging.
 - **📤 Flexible Deployment**:
-  - Supports Docker containerized deployment (separated or combined).
+  - Supports Docker containerized deployment (combined or separated).
   - Supports Serverless environment deployment (e.g., Vercel).
+  - Supports PWA (Progressive Web App).
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React 18 (Vite)
-- **Styling**: Tailwind CSS, PostCSS
+- **Framework**: React 19 (Vite 7)
+- **Styling**: Tailwind CSS 4, PostCSS
 - **Icons**: Lucide React
-- **Charts**: Recharts
-- **Routing**: React Router DOM v6
+- **Charts**: Recharts 3
+- **Routing**: React Router DOM v7
 - **HTTP Client**: Axios
+- **PWA**: vite-plugin-pwa
+- **Analytics**: Vercel Analytics & Speed Insights
 
 ### Backend
 - **Runtime**: Node.js
-- **Framework**: Express
-- **AI Engine**: Google Generative AI (Gemini)
-- **Database**: SQLite (Dev/Test) / MySQL (Recommended for Production)
-- **Security**: Node-RSA, Helmet, Express Rate Limit
+- **Framework**: Express 5
+- **AI Engine**: Google Generative AI (Gemini) / ZhiPu BigModel (dual engine with auto-fallback)
+- **Database**: SQLite (Dev/Lightweight) / MySQL (Recommended for Production)
+- **Security**: Node-RSA, bcryptjs, Helmet, Express Rate Limit
 - **CAPTCHA**: Altcha Lib, Cloudflare Turnstile
+- **Email**: Nodemailer
+- **Notifications**: DingTalk Webhook
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
 - npm or yarn
-- Google Gemini API Key (Required for AI features)
-- ZhiPu BigModel API Key (Required for AI features)
+- Google Gemini API Key and/or ZhiPu BigModel API Key (for AI features, optional)
 
 ### Installation
 
@@ -75,11 +95,13 @@ VanceFeedback is a modern, intelligent feedback and ticket management system. Bu
     cp .env.example .env
     ```
     Edit the `.env` file and configure key settings:
-    - Database connection
-    - JWT Secret
+    - Database connection (`DB_TYPE`, `DB_HOST`, etc.)
+    - JWT Secret (`JWT_SECRET`)
     - Email Service (SMTP)
-    - **GEMINI_API_KEY** (Required for AI)
-    - CAPTCHA Service Keys (Turnstile/Altcha)
+    - `GEMINI_API_KEY` and/or `BIGMODEL_API_KEY` (for AI features)
+    - CAPTCHA Service Keys (Turnstile / Altcha)
+
+    > 💡 If you don't configure environment variables, the **Setup Wizard** will guide you through configuration on first launch via the web interface.
 
 4.  **Run the Application**
     Start the development server (Frontend + Backend):
@@ -87,11 +109,11 @@ VanceFeedback is a modern, intelligent feedback and ticket management system. Bu
     npm run dev
     ```
     - Frontend: http://localhost:5173
-    - Backend: http://localhost:3000
+    - Backend: http://localhost:3030
 
-## Deployment
+## 📦 Deployment
 
-VanceFeedback supports flexible deployment options suitable for various production environments.
+VanceFeedback supports flexible deployment options suitable for various production environments. See the [Deployment Recommendation Guide](docs/RECOMMENDED_DEPLOYMENTS.md) for details.
 
 ### 1. Docker Deployment (Recommended)
 You can directly use the official image from Docker Hub:
@@ -103,35 +125,68 @@ Or launch the full environment from source:
 ```bash
 docker-compose -f docker-compose.separated.yml up -d --build
 ```
-For more details, refer to [DOCKER_DEPLOY.md](docs/DOCKER_DEPLOY.md).
+For more details, refer to [DOCKER_DEPLOY.md](docs/DOCKER_DEPLOY.md) and [DEPLOY_SEPARATED.md](docs/DEPLOY_SEPARATED.md).
 
 ### 2. Vercel Deployment
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvancehuds%2FVanceFeedback&env=JWT_SECRET,DB_TYPE,DB_HOST,DB_PORT,DB_USER,DB_NAME,DB_PASSWORD&project-name=VanceFeedback)
 
+Supports separated or full-stack deployment on Vercel Serverless:
+- **Full-stack Deployment**: Both frontend and backend hosted on Vercel. See [DEPLOY_VERCEL_FULLSTACK.md](docs/DEPLOY_VERCEL_FULLSTACK.md).
+- **Frontend Vercel + Backend VPS**: Frontend on Vercel CDN, backend deployed independently. See [DEPLOY_VERCEL.md](docs/DEPLOY_VERCEL.md).
 
-Supports separated frontend and backend deployment on Vercel Serverless:
-- Frontend can be imported directly to Vercel.
-- Backend runs as Serverless Functions.
-See [DEPLOY_VERCEL_FULLSTACK.md](docs/DEPLOY_VERCEL_FULLSTACK.md) for detailed instructions.
+## 📁 Project Structure
 
-### 3. Separated Deployment
-For traditional server environments, please refer to [DEPLOY_SEPARATED.md](docs/DEPLOY_SEPARATED.md).
+```
+VanceFeedback/
+├── src/                          # Frontend core code
+│   ├── App.jsx                   # Application entry & routing
+│   ├── api.js                    # API request abstraction
+│   ├── index.css                 # Global styles
+│   ├── pages/                    # Page components
+│   │   ├── Home.jsx              # User home (ticket list)
+│   │   ├── Login.jsx             # Login / Register
+│   │   ├── Dashboard.jsx         # Admin dashboard
+│   │   ├── SetupWizard.jsx       # Setup Wizard
+│   │   ├── KnowledgeBase.jsx     # Knowledge base
+│   │   ├── UserCenter.jsx        # User center
+│   │   ├── admin/                # Desktop admin pages
+│   │   └── mobile/               # Mobile pages (incl. admin)
+│   ├── components/               # Reusable components
+│   └── utils/                    # Utility functions
+├── server/                       # Backend service code
+│   ├── app.js                    # Express app configuration
+│   ├── db.js                     # Database initialization
+│   ├── installer.js              # Database migration & setup
+│   ├── security.js               # RSA key management
+│   ├── routes/                   # API routes
+│   │   ├── tickets.js            # Ticket CRUD
+│   │   ├── auth.js               # Authentication
+│   │   ├── users.js              # User management
+│   │   ├── ai-qa.js              # AI Knowledge Q&A
+│   │   ├── knowledge-base.js     # Knowledge base management
+│   │   ├── announcements.js      # Announcement management
+│   │   ├── settings.js           # System settings
+│   │   └── ...                   # More routes
+│   ├── services/                 # Business services
+│   │   ├── ai.js                 # AI service (Gemini / BigModel)
+│   │   ├── email.js              # Email service
+│   │   ├── dingtalk.js           # DingTalk notifications
+│   │   └── rateLimitStore.js     # Rate limit storage
+│   └── middleware/               # Middleware
+│       ├── auth.js               # JWT authentication
+│       ├── rateLimiter.js        # Rate limiting
+│       └── recaptcha.js          # CAPTCHA verification
+├── docs/                         # Deployment documentation
+├── Dockerfile*                   # Docker build files
+├── docker-compose*.yml           # Docker Compose orchestration
+└── nginx.conf                    # Nginx config (frontend container)
+```
 
-## Project Structure
-
-- **`src/`**: Frontend core code
-  - `pages/`: Page components (including `MobileAdmin*` pages)
-  - `components/`: Reusable components
-- **`server/`**: Backend service code
-  - `routes/`: API routes (including `aiRoutes.js`)
-  - `services/`: Business logic services
-  - `middleware/`: Middleware (RateLimiter, Auth)
-
-## License
+## 📄 License
 
 [MIT License](LICENSE)
 
-## Star History
+## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=vancehuds/VanceFeedback&type=Date)](https://star-history.com/#vancehuds/VanceFeedback&Date)

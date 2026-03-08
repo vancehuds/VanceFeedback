@@ -633,9 +633,9 @@ docker-compose down
 
 ### 技术栈
 
-- **前端框架**: React 19.2 + React Router 7.11
-- **构建工具**: Vite 5.0
-- **后端框架**: Express 5.2 + Node.js
+- **前端框架**: React 19 + React Router 7
+- **构建工具**: Vite 7
+- **后端框架**: Express 5 + Node.js
 - **托管平台**: Vercel（前端）+ 自建（后端）
 
 ### Vercel 相关文档
